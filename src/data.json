@@ -1,0 +1,13 @@
+{
+    "input": {
+        "config": {
+            "label": "Enter key name: "
+        }
+    },
+    "dropdown": {
+        "config": {
+            "input_label": "Enter key name: ",
+            "dropdown_label": "No of options: "
+        }
+    }
+}
