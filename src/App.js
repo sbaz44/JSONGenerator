@@ -39,7 +39,7 @@ const Dropbox = (data) => {
       <label>Dropdown label</label>
       <input
         type="text"
-        value={data.value}
+        value={data.labelValue}
         onChange={data.onChange}
         onFocus={data.onFocus}
       />
@@ -92,7 +92,7 @@ const Radiobox = (data) => {
       <label>Radio label</label>
       <input
         type="text"
-        value={data.value}
+        value={data.labelValue}
         onChange={data.onChange}
         onFocus={data.onFocus}
       />
@@ -138,21 +138,23 @@ const Radiobox = (data) => {
 };
 
 export default function App() {
-  const [elementsList, setElementList] = useState([]);
+  const [elementsList, setElementList] = useState({});
 
   const inputClick = () => {
-    const data = [...elementsList];
+    const data = { ...elementsList };
     let obj = {
       type: "text",
       label: "Key name",
       required: true,
     };
-    data.push(obj);
+    let key = "element" + Object.keys(elementsList).length;
+    data[key] = obj;
+    // data.push(obj);
     setElementList(data);
   };
 
   const dropClick = () => {
-    const data = [...elementsList];
+    const data = { ...elementsList };
     let obj = {
       type: "select",
       label: "Label",
@@ -168,12 +170,13 @@ export default function App() {
         // }
       ],
     };
-    data.push(obj);
+    let key = "element" + Object.keys(elementsList).length;
+    data[key] = obj;
     setElementList(data);
   };
 
   const radioClick = () => {
-    const data = [...elementsList];
+    const data = { ...elementsList };
     let obj = {
       type: "radio",
       label: "Label",
@@ -189,18 +192,19 @@ export default function App() {
         // }
       ],
     };
-    data.push(obj);
+    let key = "element" + Object.keys(elementsList).length;
+    data[key] = obj;
     setElementList(data);
   };
 
-  const handleChange = (event, i) => {
-    const data = [...elementsList];
-    data[i].label = event.target.value;
+  const handleChange = (event, obj) => {
+    const data = {...elementsList};
+    data[obj].label=event.target.value;
     setElementList(data);
   };
 
   const selectChange = (event, index) => {
-    const data = [...elementsList];
+    const data = {...elementsList};
     data[index].options = [];
     for (let i = 0; i < event.target.value; i++) {
       data[index].options.push("");
@@ -209,25 +213,25 @@ export default function App() {
   };
 
   const checkBoxHandle = (i) => {
-    const data = [...elementsList];
+    const data = {...elementsList};
     let required = data[i].required;
     data[i].required = !required;
     setElementList(data);
   };
 
   const optionChange = (e, i, index) => {
-    const data = [...elementsList];
+    const data = {...elementsList};
     data[index].options[i] = e.target.value;
     setElementList(data);
   };
   const removeInput = (i) => {
-    const array = [...elementsList];
-    array.splice(i, 1);
-    setElementList(array);
+    const data = {...elementsList};
+    delete data[i];
+    setElementList(data);
   };
 
   const downloadJSON = async () => {
-    const elementData = [...elementsList];
+    const elementData = {...elementsList};
     let data = {
       data: elementData,
     };
@@ -254,7 +258,61 @@ export default function App() {
         <button onClick={radioClick}>Add Radio Button</button>
       </div>
       <div className="container">
-        {elementsList.map((item, index) => {
+        {Object.keys(elementsList).map((item, index) => {
+          let data = elementsList[item];
+          if (elementsList[item].type === "text") {
+            return (
+              <InputBox
+                key={index + 22}
+                value={data.label}
+                required={data.required}
+                onChange={(e) => handleChange(e, item)}
+                onFocus={(event) => event.target.select()}
+                remove
+                removeInput={() => removeInput(item)}
+                checkBoxHandle={() => checkBoxHandle(item)}
+              />
+            );
+          }
+          if (elementsList[item].type === "select") {
+            return (
+              <Dropbox
+                key={index + 33}
+                labelValue={data.label}
+                required={data.required}
+                options={data.options}
+                onFocus={(event) => event.target.select()}
+                onChange={(e) => handleChange(e, item)}
+                selectChange={(e) => selectChange(e, item)}
+                optionHandlee={(e, value) => {
+                  optionChange(e, value, item);
+                }}
+                removeInput={() => removeInput(item)}
+                checkBoxHandle={() => checkBoxHandle(item)}
+              />
+            );
+          }
+          if (elementsList[item].type === "radio") {
+            return (
+              <Radiobox
+                key={index + 33}
+                labelValue={data.label}
+                options={data.options}
+                required={data.required}
+                onChange={(e) => handleChange(e, item)}
+                selectChange={(e) => selectChange(e, item)}
+                onFocus={(event) => event.target.select()}
+                optionHandlee={(e, value) => {
+                  optionChange(e, value, item);
+                }}
+                removeInput={() => removeInput(item)}
+                checkBoxHandle={() => checkBoxHandle(item)}
+              />
+            );
+          }
+          return null;
+        })}
+        {/* {elementsList.map((item, index) => {
           if (item.type === "text") {
             return (
               <InputBox
@@ -306,9 +364,9 @@ export default function App() {
             );
           }
           return null;
-        })}
+        })} */}
       </div>
-      {elementsList.length > 0 && (
+      {Object.keys(elementsList).length > 0 && (
         <button onClick={downloadJSON}>Download JSON</button>
       )}
 
