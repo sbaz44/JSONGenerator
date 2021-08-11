@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Form, TextField, SelectField, SubmitButton, RadioField } from "./FormElement";
+import {
+  Form,
+  TextField,
+  SelectField,
+  SubmitButton,
+  RadioField,
+} from "./FormElement";
 import * as Yup from "yup";
 const formSchema = {
   element0: { type: "text", label: "Name", required: true },
@@ -18,12 +24,12 @@ const formSchema = {
   },
 };
 
-export default function App2() {
+export default function App2({ data }) {
   const [formData, setFormData] = useState({});
   const [validationSchema, setValidationSchema] = useState({});
 
   useEffect(() => {
-    initForm(formSchema);
+    initForm(data);
   }, []);
 
   const initForm = (formSchema) => {
@@ -41,19 +47,18 @@ export default function App2() {
         _validationSchema[key] = Yup.string().oneOf(
           formSchema[key].options.map((o) => o)
         );
-      }
-      else if (formSchema[key].type === "radio") {
+      } else if (formSchema[key].type === "radio") {
         _validationSchema[key] = Yup.string().oneOf(
           formSchema[key].options.map((o) => o)
         );
       }
       if (formSchema[key].required) {
-          _validationSchema[key] = _validationSchema[key].required("Required");
-        }
+        _validationSchema[key] = _validationSchema[key].required("Required");
+      }
     }
-    
-    console.log( _formData)
-    console.log( _validationSchema)
+
+    console.log(_formData);
+    console.log(_validationSchema);
     setFormData(_formData);
     setValidationSchema(Yup.object().shape({ ..._validationSchema }));
   };
@@ -75,8 +80,8 @@ export default function App2() {
     }
 
     if (elementSchema.type === "radio") {
-        return <RadioField {...props} />;
-      }
+      return <RadioField {...props} />;
+    }
   };
 
   const onSubmit = (values, { setSubmitting, resetForm, setStatus }) => {
@@ -86,15 +91,15 @@ export default function App2() {
 
   return (
     <div>
-        {console.log(validationSchema)}
+      {console.log(validationSchema)}
       <Form
         enableReinitialize
         initialValues={formData}
         validationSchema={validationSchema}
         onSubmit={onSubmit}
       >
-        {Object.keys(formSchema).map((key, ind) => (
-          <div key={key}>{getFormElement(key, formSchema[key])}</div>
+        {Object.keys(data).map((key, ind) => (
+          <div key={key}>{getFormElement(key, data[key])}</div>
         ))}
         <SubmitButton title="Submit" />
       </Form>

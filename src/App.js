@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./App.css";
-
+import App2 from "./App2";
 const InputBox = (data) => {
   return (
     <div className="input-container">
@@ -139,6 +139,7 @@ const Radiobox = (data) => {
 
 export default function App() {
   const [elementsList, setElementList] = useState({});
+  const [isAdded, setIsAdded] = useState(false);
 
   const inputClick = () => {
     const data = { ...elementsList };
@@ -198,13 +199,13 @@ export default function App() {
   };
 
   const handleChange = (event, obj) => {
-    const data = {...elementsList};
-    data[obj].label=event.target.value;
+    const data = { ...elementsList };
+    data[obj].label = event.target.value;
     setElementList(data);
   };
 
   const selectChange = (event, index) => {
-    const data = {...elementsList};
+    const data = { ...elementsList };
     data[index].options = [];
     for (let i = 0; i < event.target.value; i++) {
       data[index].options.push("");
@@ -213,39 +214,41 @@ export default function App() {
   };
 
   const checkBoxHandle = (i) => {
-    const data = {...elementsList};
+    const data = { ...elementsList };
     let required = data[i].required;
     data[i].required = !required;
     setElementList(data);
   };
 
   const optionChange = (e, i, index) => {
-    const data = {...elementsList};
+    const data = { ...elementsList };
     data[index].options[i] = e.target.value;
     setElementList(data);
   };
   const removeInput = (i) => {
-    const data = {...elementsList};
+    const data = { ...elementsList };
     delete data[i];
     setElementList(data);
   };
 
   const downloadJSON = async () => {
-    const elementData = {...elementsList};
-    let data = {
-      data: elementData,
-    };
-    console.log(data);
-    const fileName = "file";
-    const json = JSON.stringify(data);
-    const blob = new Blob([json], { type: "application/json" });
-    const href = await URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = href;
-    link.download = fileName + ".json";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // const elementData = {...elementsList};
+    // let data = {
+    //   data: elementData,
+    // };
+    // console.log(data);
+    // const fileName = "file";
+    // const json = JSON.stringify(data);
+    // const blob = new Blob([json], { type: "application/json" });
+    // const href = await URL.createObjectURL(blob);
+    // const link = document.createElement("a");
+    // link.href = href;
+    // link.download = fileName + ".json";
+    // document.body.appendChild(link);
+    // link.click();
+    // document.body.removeChild(link);
+    setIsAdded(true);
+    // console.log(elementsList.data);
   };
   return (
     <div className="App">
@@ -371,6 +374,7 @@ export default function App() {
       )}
 
       <pre>{JSON.stringify(elementsList, null, 4)}</pre>
+      {isAdded && <App2 data={elementsList} />}
     </div>
   );
 }
