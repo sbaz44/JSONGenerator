@@ -26,6 +26,17 @@ const InputBox = (data) => {
           />
         </label>
       )}
+      {data.remove && (
+        <label>
+          Only Number?
+          <input
+            type="checkbox"
+            value={data.isNumber}
+            defaultChecked={data.isNumber}
+            onChange={data.checkNumberHandle}
+          />
+        </label>
+      )}
     </div>
   );
 };
@@ -137,6 +148,60 @@ const Radiobox = (data) => {
   );
 };
 
+const Checkbox = (data) => {
+  const optionHandle = (e, i) => {
+    return data.optionHandlee(e, i);
+  };
+  return (
+    <div className="drop-container">
+      <label>Checkbox label</label>
+      <input
+        type="text"
+        value={data.labelValue}
+        onChange={data.onChange}
+        onFocus={data.onFocus}
+      />
+      <input type="button" value="remove" onClick={data.removeInput} />
+      <br />
+      <label>
+        Required?
+        <input
+          type="checkbox"
+          value={data.required}
+          defaultChecked={data.required}
+          onChange={data.checkBoxHandle}
+        />
+      </label>
+      <br />
+      <label> No of options:</label>
+      <select
+        // value={this.state.value}
+        onChange={data.selectChange}
+      >
+        <option value="" disabled selected></option>
+
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+      {data.options.map((item, index) => {
+        return (
+          <InputBox
+            key={index + 458}
+            value={item}
+            onFocus={data.onFocus}
+            onChange={(e) => optionHandle(e, index)}
+            remove={false}
+          />
+        );
+      })}
+    </div>
+  );
+};
+
+
 export default function App() {
   const [elementsList, setElementList] = useState({});
   const [isAdded, setIsAdded] = useState(false);
@@ -147,6 +212,7 @@ export default function App() {
       type: "text",
       label: "Key name",
       required: true,
+      isNumber:false
     };
     let key = "element" + Object.keys(elementsList).length;
     data[key] = obj;
@@ -198,6 +264,21 @@ export default function App() {
     setElementList(data);
   };
 
+  const checkboxClick = () => {
+    const data = { ...elementsList };
+    let obj = {
+      type: "checkbox",
+      label: "Label",
+      required: true,
+      options: [
+      
+      ],
+    };
+    let key = "element" + Object.keys(elementsList).length;
+    data[key] = obj;
+    setElementList(data);
+  };
+
   const handleChange = (event, obj) => {
     const data = { ...elementsList };
     data[obj].label = event.target.value;
@@ -217,6 +298,13 @@ export default function App() {
     const data = { ...elementsList };
     let required = data[i].required;
     data[i].required = !required;
+    setElementList(data);
+  };
+
+  const checkNumberHandle = (i) => {
+    const data = { ...elementsList };
+    let required = data[i].isNumber;
+    data[i].isNumber = !required;
     setElementList(data);
   };
 
@@ -259,6 +347,7 @@ export default function App() {
         <button onClick={inputClick}>Add Inputbox</button>
         <button onClick={dropClick}>Add Dropdown</button>
         <button onClick={radioClick}>Add Radio Button</button>
+        <button onClick={checkboxClick}>Add Checkbox</button>
       </div>
       <div className="container">
         {Object.keys(elementsList).map((item, index) => {
@@ -269,11 +358,13 @@ export default function App() {
                 key={index + 22}
                 value={data.label}
                 required={data.required}
+                isNumber={data.isNumber}
                 onChange={(e) => handleChange(e, item)}
                 onFocus={(event) => event.target.select()}
                 remove
                 removeInput={() => removeInput(item)}
                 checkBoxHandle={() => checkBoxHandle(item)}
+                checkNumberHandle={() => checkNumberHandle(item)}
               />
             );
           }
@@ -305,6 +396,24 @@ export default function App() {
                 onChange={(e) => handleChange(e, item)}
                 selectChange={(e) => selectChange(e, item)}
                 onFocus={(event) => event.target.select()}
+                optionHandlee={(e, value) => {
+                  optionChange(e, value, item);
+                }}
+                removeInput={() => removeInput(item)}
+                checkBoxHandle={() => checkBoxHandle(item)}
+              />
+            );
+          }
+          if (elementsList[item].type === "checkbox") {
+            return (
+              <Checkbox
+                key={index + 33}
+                labelValue={data.label}
+                required={data.required}
+                options={data.options}
+                onFocus={(event) => event.target.select()}
+                onChange={(e) => handleChange(e, item)}
+                selectChange={(e) => selectChange(e, item)}
                 optionHandlee={(e, value) => {
                   optionChange(e, value, item);
                 }}

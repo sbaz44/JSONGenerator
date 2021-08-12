@@ -5,6 +5,7 @@ import {
   SelectField,
   SubmitButton,
   RadioField,
+  CheckboxField,
 } from "./FormElement";
 import * as Yup from "yup";
 const formSchema = {
@@ -35,12 +36,16 @@ export default function App2({ data }) {
   const initForm = (formSchema) => {
     let _formData = {};
     let _validationSchema = {};
-
+    console.log(formSchema);
     for (var key of Object.keys(formSchema)) {
       _formData[key] = "";
 
       if (formSchema[key].type === "text") {
-        _validationSchema[key] = Yup.string();
+        if (formSchema[key].isNumber) {
+          _validationSchema[key] = Yup.number();
+        } else {
+          _validationSchema[key] = Yup.string();
+        }
       } else if (formSchema[key].type === "email") {
         _validationSchema[key] = Yup.string().email();
       } else if (formSchema[key].type === "select") {
@@ -51,14 +56,16 @@ export default function App2({ data }) {
         _validationSchema[key] = Yup.string().oneOf(
           formSchema[key].options.map((o) => o)
         );
+      } else if (formSchema[key].type === "checkbox") {
+        _validationSchema[key] = Yup.array()
+          .required()
+          .min(1, "Please select atleast one option");
       }
       if (formSchema[key].required) {
         _validationSchema[key] = _validationSchema[key].required("Required");
       }
     }
 
-    console.log(_formData);
-    console.log(_validationSchema);
     setFormData(_formData);
     setValidationSchema(Yup.object().shape({ ..._validationSchema }));
   };
@@ -81,6 +88,10 @@ export default function App2({ data }) {
 
     if (elementSchema.type === "radio") {
       return <RadioField {...props} />;
+    }
+
+    if (elementSchema.type === "checkbox") {
+      return <CheckboxField {...props} />;
     }
   };
 

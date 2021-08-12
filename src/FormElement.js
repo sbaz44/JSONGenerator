@@ -30,6 +30,9 @@ export function TextField(props) {
         name={name}
         id={name}
         placeholder={placeholder || ""}
+        onChange={(v)=>{
+          // props.setFieldValue(count, v);
+          console.log("object",v)}}
         {...rest}
       />
       <ErrorMessage
@@ -77,25 +80,7 @@ export function RadioField(props) {
         />
         {optn}
         </label>
-        ))}
-
-        {/* <input
-          type="radio"
-          id="radioOne"
-          defaultChecked={values.myRadioGroup === "one"}
-          name="myRadioGroup"
-          value="one"
-        />
-        <label htmlFor="radioOne">One</label>
-
-        <input
-          type="radio"
-          id="radioTwo"
-          defaultChecked={values.myRadioGroup === "two"}
-          name="myRadioGroup"
-          value="two"
-        /> */}
-       
+        ))}       
       </Field>
       <ErrorMessage
         name={name}
@@ -104,6 +89,56 @@ export function RadioField(props) {
     </>
   );
 }
+
+export function CheckboxField(props) {
+  const { name, label, options } = props;
+  return (
+    <>
+      {label && <label for={name}>{label}</label>}
+      {options.map((optn,index)=><label>
+        <Field type="checkbox" value={optn}  name={name} />
+        {optn}
+      </label>)}
+      {/* <Field as="checkbox" id={name} name={name}>
+        {options.map((optn, index) => (
+          <option value={optn} label={optn} />
+        ))}
+      </Field> */}
+      <ErrorMessage
+        name={name}
+        render={(msg) => <div style={{ color: "red" }}>{msg}</div>}
+      />
+    </>
+  );
+}
+
+// function Checkbox(props) {
+//   return (
+//     <Field name={props.name}>
+//       {({ field, form }) => (
+//         <label>
+//           <input
+//             type="checkbox"
+//             {...props}
+//             checked={field.value.includes(props.value)}
+//             onChange={() => {
+//               if (field.value.includes(props.value)) {
+//                 const nextValue = field.value.filter(
+//                   (value) => value !== props.value
+//                 );
+//                 form.setFieldValue(props.name, nextValue);
+//               } else {
+//                 const nextValue = field.value.concat(props.value);
+//                 form.setFieldValue(props.name, nextValue);
+//               }
+//             }}
+//           />
+//           {props.value}
+//         </label>
+//       )}
+//     </Field>
+//   );
+// }
 
 
 export function SubmitButton(props) {
