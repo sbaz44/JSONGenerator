@@ -6,7 +6,7 @@ import {
   ErrorMessage,
   useFormikContext,
   useField,
-  useFormik
+  useFormik,
 } from "formik";
 
 export function Form(props) {
@@ -20,7 +20,8 @@ export function Form(props) {
 }
 
 export function TextField(props) {
-  const { name, label, placeholder, ...rest } = props;
+  const formikProps = useFormikContext();
+  const { name, label, placeholder, isNumber, ...rest } = props;
   return (
     <>
       {label && <label for={name}>{label}</label>}
@@ -29,10 +30,23 @@ export function TextField(props) {
         type="text"
         name={name}
         id={name}
-        placeholder={placeholder || ""}
-        onChange={(v)=>{
-          // props.setFieldValue(count, v);
-          console.log("object",v)}}
+        placeholder={label || ""}
+        onChange={(e) => {
+          if (isNumber) {
+            if (isNaN(e.target.value)) {
+              return;
+            }
+            const onlyNums = e.target.value.replace(/[^0-9]/g, "");
+            formikProps.setFieldValue(name, onlyNums);
+            // const { value } = e.target;
+            // const regex = /^(0*[1-9][0-9]*(\.[0-9]*)?|0*\.[0-9]*[1-9][0-9]*)$/;
+            // if (regex.test(value.toString())) {
+            //   formikProps.setFieldValue(name, value);
+            // }
+          } else {
+            formikProps.setFieldValue(name, e.target.value);
+          }
+        }}
         {...rest}
       />
       <ErrorMessage
@@ -64,23 +78,22 @@ export function SelectField(props) {
 
 export function RadioField(props) {
   const { name, label, options } = props;
-  console.log(name, label, options)
+  console.log(name, label, options);
   return (
     <>
       {label && <label for={name}>{label}</label>}
       <Field component="div" name="myRadioGroup">
-      {options.map((optn, index) => (
-          // <option value={optn} label={optn} />
-         <label> <input
-          type="radio"
-          id="radioOne"
-          // defaultChecked={values.myRadioGroup === "one"}
-          name={name}
-          value={optn}
-        />
-        {optn}
-        </label>
-        ))}       
+        {options.map((optn, index) => (
+          <label>
+            <input
+              type="radio"
+              id={"radio-" + index}
+              name={name}
+              value={optn}
+            />
+            {optn}
+          </label>
+        ))}
       </Field>
       <ErrorMessage
         name={name}
@@ -95,15 +108,13 @@ export function CheckboxField(props) {
   return (
     <>
       {label && <label for={name}>{label}</label>}
-      {options.map((optn,index)=><label>
-        <Field type="checkbox" value={optn}  name={name} />
-        {optn}
-      </label>)}
-      {/* <Field as="checkbox" id={name} name={name}>
-        {options.map((optn, index) => (
-          <option value={optn} label={optn} />
-        ))}
-      </Field> */}
+      {options.map((optn, index) => (
+        <label>
+          <Field type="checkbox" value={optn} name={name} />
+          {optn}
+        </label>
+      ))}
+
       <ErrorMessage
         name={name}
         render={(msg) => <div style={{ color: "red" }}>{msg}</div>}
@@ -139,7 +150,6 @@ export function CheckboxField(props) {
 //     </Field>
 //   );
 // }
-
 
 export function SubmitButton(props) {
   const { title, ...rest } = props;

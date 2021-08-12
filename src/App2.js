@@ -76,6 +76,7 @@ export default function App2({ data }) {
       name: elementName,
       label: elementSchema.label,
       options: elementSchema.options,
+      isNumber: elementSchema.isNumber,
     };
 
     if (elementSchema.type === "text" || elementSchema.type === "email") {
