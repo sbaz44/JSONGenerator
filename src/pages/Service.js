@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Button from "../components/Button";
 import Inputbox from "../components/Inputbox";
 import { axiosApiInstance } from "../helpers/request";
+import { useDebouncedEffect } from "../helpers/useDebounce";
 
 export default function Service() {
   const [serviceName, setServiceName] = useState("");
@@ -12,27 +13,35 @@ export default function Service() {
   const [serviceHW, setServiceHW] = useState(["A", "B", "C", "D"]);
   const [serviceOSSelected, setServiceOSSelected] = useState("");
   const [serviceHWSelected, setServiceHWSelected] = useState("");
-
-  useEffect(async () => {
-    serviceCheck();
-  }, []);
+  const [isServiceNameUnique, setisServiceNameUnique] = useState(true);
+  useDebouncedEffect(() => serviceCheck(), [serviceName], 1000);
 
   const serviceCheck = async () => {
-    let res = await axiosApiInstance.get(
-      "service_mgmt/unique_check?serviceName=aca"
-    );
-    console.log(res.data.detail);
+    if (serviceName) {
+      let res = await axiosApiInstance.get(
+        "service_mgmt/unique_check?serviceName=" + serviceName
+      );
+      if (res.data.detail === "service found") setisServiceNameUnique(false);
+    }
   };
 
   return (
     <div className="service-wrapper">
-      <div className="card card-3">
+      <div className="cardd card-3">
         <h1>Service</h1>
-        <Inputbox
-          label="Service Name"
-          value={serviceName}
-          onChange={(e) => setServiceName(e.target.value)}
-        />
+        <div className="service__unique__wrapper">
+          <Inputbox
+            label="Service Name"
+            value={serviceName}
+            onChange={(e) => {
+              setServiceName(e.target.value);
+            }}
+            autoFocus
+          />
+          {!isServiceNameUnique && (
+            <p className="error">Service name already present</p>
+          )}
+        </div>
         <Inputbox
           label="Service Type"
           value={serviceType}

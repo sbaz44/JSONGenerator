@@ -9,6 +9,7 @@ export default function Inputbox(props) {
         type="text"
         class="form__field"
         placeholder={props.label}
+        autoFocus={props.autoFocus}
       />
       <label for="email" class="form__label2 form__label">
         {props.label}

@@ -53,7 +53,8 @@ async function refreshAccessToken() {
     return data.data.accessToken;
   } catch (error) {
     console.log("REFERSH TOKEN EXPIRED");
-    window.location.href = "/";
+    // window.location.href = "/";
+    // alert("token expired");
     localStorage.clear();
   }
 }
