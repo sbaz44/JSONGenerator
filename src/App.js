@@ -1,5 +1,4 @@
 import { useState } from "react";
-import "./App.css";
 import App2 from "./App2";
 const InputBox = (data) => {
   return (
@@ -201,7 +200,6 @@ const Checkbox = (data) => {
   );
 };
 
-
 export default function App() {
   const [elementsList, setElementList] = useState({});
   const [isAdded, setIsAdded] = useState(false);
@@ -212,7 +210,7 @@ export default function App() {
       type: "text",
       label: "Key name",
       required: true,
-      isNumber:false
+      isNumber: false,
     };
     let key = "element" + Object.keys(elementsList).length;
     data[key] = obj;
@@ -270,9 +268,7 @@ export default function App() {
       type: "checkbox",
       label: "Label",
       required: true,
-      options: [
-      
-      ],
+      options: [],
     };
     let key = "element" + Object.keys(elementsList).length;
     data[key] = obj;

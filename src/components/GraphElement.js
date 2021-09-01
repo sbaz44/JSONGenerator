@@ -145,3 +145,12 @@ export const Gauge = () => (
     />
   </div>
 );
+
+export const TextCard = () => (
+  <div style={{ width: "20vw" }} className="card2 card-5">
+    <div className="card-header">
+      <h1 className="title">Text Card</h1>
+    </div>
+    <h3>20</h3>
+  </div>
+);
