@@ -29,7 +29,6 @@ axiosApiInstance.interceptors.response.use(
     if (error.response.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       const access_token = await refreshAccessToken();
-
       axios.defaults.headers.common["Authorization"] = "Bearer " + access_token;
       // const value = JSON.parse(localStorage.getItem("user"));
       // value.access_token = access_token;
@@ -39,20 +38,24 @@ axiosApiInstance.interceptors.response.use(
     }
     console.log("error");
     console.log(error);
+    localStorage.clear();
     return Promise.reject(error);
   }
 );
 
 async function refreshAccessToken() {
+  const headers = {
+    Authorization: "Bearer " + localStorage.getItem("refreshToken"),
+  };
   console.log("REFRESHING");
   try {
-    const data = await axios.post(API_URL + "users/refresh", {
-      refreshToken: localStorage.getItem("refreshToken"),
+    const data = await axios.post(API_URL + "users/refresh", "", {
+      headers: headers,
     });
 
     return data.data.accessToken;
   } catch (error) {
-    console.log("REFERSH TOKEN EXPIRED");
+    console.log("REFRESH TOKEN EXPIRED");
     // window.location.href = "/";
     // alert("token expired");
     localStorage.clear();

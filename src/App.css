@@ -128,7 +128,12 @@ button {
   width: 80vw;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
 }
-
+.card-4 {
+  width: 80vw;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+  text-align: left;
+  align-items: unset;
+}
 /* service-wrapper */
 .service-wrapper {
   display: flex;
@@ -144,7 +149,29 @@ button {
 .service__label {
   margin-right: 1vw;
 }
-
+.service__pop {
+  position: relative;
+  padding: 3vw;
+  width: 40vw;
+  height: 22vh;
+  background-color: white;
+}
+.btn-wrap {
+  display: flex;
+  margin: 2vw 0;
+}
+.os-btn {
+  background-color: rgb(255, 255, 255);
+  padding: 1vw;
+  border-radius: 8px;
+  cursor: pointer;
+  margin: 0 1vw;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+}
+.active-os-btn {
+  background-color: rgb(95, 243, 248);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.09), 0 6px 6px rgba(0, 0, 0, 0.1);
+}
 .service__unique__wrapper {
   width: 100%;
   position: relative;
@@ -325,4 +352,33 @@ button {
   bottom: 0;
   color: red;
   font-size: 16px;
+}
+
+/* POPUP */
+.popupContainer {
+  position: fixed;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  top: 0;
+  left: 0;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+  z-index: 100;
+  font-family: Montserrat;
+}
+
+.popupContainer .overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.56);
 }
