@@ -7694,6 +7694,11 @@
     "dns-packet" "^1.3.1"
     "thunky" "^1.0.2"
 
+"multiselect-react-dropdown@^2.0.6":
+  "integrity" "sha512-PZxHLaGJnCq4a+7IESmP1eST1O1CgvFxaAeB6aMDoWL/UN2hBgk5WJRxEZSCxCTkNpnWBzjPwclCZYiU2zQDGg=="
+  "resolved" "https://registry.npmjs.org/multiselect-react-dropdown/-/multiselect-react-dropdown-2.0.6.tgz"
+  "version" "2.0.6"
+
 "nan@^2.12.1":
   "integrity" "sha512-M2ufzIiINKCuDfBSAUr1vWQ+vuVcA9kqx8JJUsbQi6yf1uGRyb7HfpdfUr5qLXf3B/t8dPvcjhKMmlfnP47EzQ=="
   "resolved" "https://registry.npmjs.org/nan/-/nan-2.14.2.tgz"

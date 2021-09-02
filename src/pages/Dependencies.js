@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 export default function Dependencies() {
-  const [data, setData] = useState({
+  const [obj, setObj] = useState({
     Base: {},
     Usecase: {
       loitering: [
@@ -38,6 +38,31 @@ export default function Dependencies() {
     Analytics: {},
     Database: {},
   });
+  const [Data, setData] = useState([]);
+  const makeArray = () => {
+    let arr = [];
+    for (let ele of Object.keys(obj)) {
+      let objKey = Object.keys(obj[ele]);
+      if (objKey.length) {
+        for (let ele2 of objKey) {
+          for (let ele3 of obj[ele][ele2]) {
+            console.log(ele3);
+            ele3.type = ele;
+            ele3.subtype = ele2;
+            let services = obj[ele][ele2];
+            console.log(services);
+            // ele.serviceVersion = services;
+            arr.push(ele3);
+          }
+        }
+      }
+    }
+    console.log(arr);
+    setData(arr);
+  };
+  useEffect(() => {
+    makeArray();
+  }, []);
 
   const [baseData, setBaseData] = useState([]);
   const [usecaseData, setUsecaseData] = useState([]);
@@ -46,5 +71,16 @@ export default function Dependencies() {
   const [analyticsData, setAnalyticsData] = useState([]);
   const [databaseData, setDatabaseData] = useState([]);
 
-  return <div>Dependencies</div>;
+  return (
+    <div>
+      Dependencies
+      {Object.keys(obj).map((item, index) => {
+        return Data.map((dataItem, index) => {
+          if (item === dataItem.type) {
+            return <p>{dataItem.subtype}</p>;
+          } else return null;
+        });
+      })}
+    </div>
+  );
 }
