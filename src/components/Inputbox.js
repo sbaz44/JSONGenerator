@@ -6,6 +6,7 @@ export default function Inputbox(props) {
       <input
         onChange={props.onChange}
         value={props.value}
+        name={props.name}
         type="text"
         class="form__field"
         placeholder={props.label}
