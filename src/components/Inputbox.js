@@ -16,6 +16,11 @@ export default function Inputbox(props) {
       <label for="email" class="form__label2 form__label">
         {props.label}
       </label>
+      {props.error && (
+        <p className="input__error">
+          {props.helperText ? props.helperText : "Required"}
+        </p>
+      )}
     </div>
   );
 }

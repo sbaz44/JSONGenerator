@@ -8,6 +8,16 @@ import { useDebouncedEffect } from "../helpers/useDebounce";
 
 export default function Service() {
   let history = useHistory();
+  const [errors, setErrors] = useState({
+    isAccessEmpty: false,
+    isServiceNameEmpty: false,
+    isServiceTypeEmpty: false,
+    isServiceDEmpty: false,
+    isVersionEmpty: false,
+    isOutputTypeEmpty: false,
+    isOSEmpty: false,
+    isHWEmpty: false,
+  });
 
   const [serviceName, setServiceName] = useState("");
   const [accessKey, setAccessKey] = useState("");
@@ -34,14 +44,14 @@ export default function Service() {
   const [isServiceNameUnique, setisServiceNameUnique] = useState(true);
   const [isPopOpen, setIsPopOpen] = useState(true);
   const [osData, setOSData] = useState([
-    {
-      osVersion: "ubuntu_arm64_jp4.4",
-      compatibleHardwareVersion: ["DN4G", "DX8G"],
-    },
-    {
-      osVersion: "Windows 10",
-      compatibleHardwareVersion: ["WinA", "WinB"],
-    },
+    // {
+    //   osVersion: "ubuntu_arm64_jp4.4",
+    //   compatibleHardwareVersion: ["DN4G", "DX8G"],
+    // },
+    // {
+    //   osVersion: "Windows 10",
+    //   compatibleHardwareVersion: ["WinA", "WinB"],
+    // },
   ]);
   useDebouncedEffect(() => serviceCheck(), [serviceName], 1000);
 
@@ -65,7 +75,7 @@ export default function Service() {
   };
 
   useEffect(() => {
-    // getOS();
+    getOS();
   }, []);
 
   const handleOSClick = (i) => {
@@ -117,27 +127,58 @@ export default function Service() {
   };
 
   const postData = async () => {
-    let data = {
-      accessKey: accessKey,
-      serviceName: serviceName,
-      description: serviceDesc,
-      serviceType: serviceType,
-      version: serviceVersion,
-      outputType: selectedOutputType,
-      compatibleOsVersions: serviceOSSelected,
-      compatibleHardwareVersions: serviceHWSelected,
-    };
-    let res = await axiosApiInstance.post("service_mgmt/", data);
-    console.log(res);
-    history.push("/resource");
-    localStorage.setItem("serviceID", res.data.serviceId);
+    let _errors = { ...errors };
+    if (accessKey === "") {
+      _errors["isAccessEmpty"] = true;
+    }
+    if (serviceName === "") {
+      _errors["isServiceNameEmpty"] = true;
+    }
+    if (serviceDesc === "") {
+      _errors["isServiceDEmpty"] = true;
+    }
+    if (serviceType === "") {
+      _errors["isServiceTypeEmpty"] = true;
+    }
+    if (selectedOutputType === "") {
+      _errors["isOutputTypeEmpty"] = true;
+    }
+    if (serviceVersion === "") {
+      _errors["isVersionEmpty"] = true;
+    }
+    if (HWSelected.length === 0) {
+      _errors["isHWEmpty"] = true;
+    }
+    if (serviceOSSelected.length === 0) {
+      _errors["isOSEmpty"] = true;
+    }
+    setErrors(_errors);
+    // let data = {
+    //   accessKey: accessKey,
+    //   serviceName: serviceName,
+    //   description: serviceDesc,
+    //   serviceType: serviceType,
+    //   version: serviceVersion,
+    //   outputType: selectedOutputType,
+    //   compatibleOsVersions: serviceOSSelected,
+    //   compatibleHardwareVersions: serviceHWSelected,
+    // };
+    // let res = await axiosApiInstance.post("service_mgmt/", data);
+    // console.log(res);
+    // history.push("/resource");
+    // localStorage.setItem("serviceID", res.data.serviceId);
+  };
+
+  const clearError = (name) => {
+    let _errors = { ...errors };
+    if (_errors[name] === true) {
+      _errors[name] = false;
+      setErrors(_errors);
+    }
   };
   return (
     <div className="service-wrapper">
-      {/* {console.log(serviceHWSelected)}
-      {console.log(serviceOSSelected)}
-      {console.log(HWSelected)} */}
-      {console.log(HWSelected)}
+      {console.log({ HWSelected, serviceOSSelected })}
       <div className="cardd card-3">
         <h1>Service</h1>
         <div className="service__unique__wrapper">
@@ -146,15 +187,22 @@ export default function Service() {
             value={accessKey}
             onChange={(e) => setAccessKey(e.target.value)}
             autoFocus
+            error={errors["isAccessEmpty"]}
+            onFocus={() => clearError("isAccessEmpty")}
           />
 
           <Inputbox
             label="Service Name"
             value={serviceName}
             onChange={(e) => {
-              setServiceName(e.target.value);
+              const value = e.target.value;
+              setServiceName(value.split(" ").join(""));
             }}
-            onFocus={() => setisServiceNameUnique(true)}
+            onFocus={() => {
+              setisServiceNameUnique(true);
+              clearError("isServiceNameEmpty");
+            }}
+            error={errors["isServiceNameEmpty"]}
           />
           {!isServiceNameUnique && (
             <p className="error">Service name already present</p>
@@ -164,7 +212,12 @@ export default function Service() {
           <label>
             Service Type
             <select
-              className="service__select"
+              className={
+                errors["isServiceTypeEmpty"]
+                  ? "service__select select__error"
+                  : "service__select"
+              }
+              onFocus={() => clearError("isServiceTypeEmpty")}
               value={serviceType}
               onChange={(e) => setServiceType(e.target.value)}
             >
@@ -187,18 +240,30 @@ export default function Service() {
             rows="6"
             value={serviceDesc}
             onChange={(e) => setServiceDesc(e.target.value)}
+            onFocus={() => clearError("isServiceDEmpty")}
           ></textarea>
           <label for="message" class="form__label2 form__label">
             Service Description
           </label>
+          {errors["isServiceDEmpty"] && (
+            <p className="input__error">Required</p>
+          )}
         </div>
         <Inputbox
           label="Service Version"
           value={serviceVersion}
           onChange={(e) => setServiceVersion(e.target.value)}
+          error={errors["isVersionEmpty"]}
+          onFocus={() => clearError("isVersionEmpty")}
         />
         <div style={{ marginBottom: "2vw" }}>
-          <label>Compatible OS Version </label>
+          <label
+            style={
+              errors["isOSEmpty"] ? { color: "red" } : { color: "inherit" }
+            }
+          >
+            Compatible OS Version
+          </label>
           <div className="btn-wrap">
             {osData.map((item, index) => (
               <div
@@ -209,7 +274,10 @@ export default function Service() {
                     ? "os-btn active-os-btn"
                     : "os-btn"
                 }
-                onClick={() => handleOSClick(index)}
+                onClick={() => {
+                  handleOSClick(index);
+                  clearError("isOSEmpty");
+                }}
               >
                 {item.osVersion}
               </div>
@@ -217,20 +285,26 @@ export default function Service() {
           </div>
         </div>
         <div style={{ marginBottom: "2vw" }}>
-          <label>
+          <label
+            style={
+              errors["isHWEmpty"] ? { color: "red" } : { color: "inherit" }
+            }
+          >
             Compatible Hardware Version
             <div className="btn-wrap">
               {serviceHWSelected.map((item, index) => (
                 <div
                   key={index + item}
                   // className="os-btn"
-                  className={"os-btn"}
                   className={
                     HWSelected.includes(item)
                       ? "os-btn active-os-btn"
                       : "os-btn"
                   }
-                  onClick={() => handleHWClick(index)}
+                  onClick={() => {
+                    handleHWClick(index);
+                    clearError("isHWEmpty");
+                  }}
                 >
                   {item}
                 </div>
@@ -243,7 +317,12 @@ export default function Service() {
           <label>
             Output Type
             <select
-              className="service__select"
+              className={
+                errors["isOutputTypeEmpty"]
+                  ? "service__select select__error"
+                  : "service__select"
+              }
+              onFocus={() => clearError("isOutputTypeEmpty")}
               value={selectedOutputType}
               onChange={(e) => setSelectedOutputType(e.target.value)}
             >
