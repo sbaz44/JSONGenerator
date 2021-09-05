@@ -83,7 +83,7 @@ button {
 .input__error {
   text-align: left;
   color: red;
-  font-size: 16px;
+  font-size: 12px;
 }
 .select__error {
   background-color: red;

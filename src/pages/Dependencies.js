@@ -39,7 +39,24 @@ export default function Dependencies() {
         },
       ],
     },
-    AI: {},
+    AI: {
+      person: [
+        {
+          serviceId: "612faf2ffbad2434de32aa95",
+          versions: "latest",
+        },
+        {
+          serviceId: "6130856754b96c9e2b743e0c",
+          versions: "1.0.1",
+        },
+      ],
+      vehicle: [
+        {
+          serviceId: "61308658026cfe2b4a89380f",
+          versions: "1.0.1",
+        },
+      ],
+    },
     Firmware: {},
     Analytics: {},
     Database: {},
@@ -72,8 +89,7 @@ export default function Dependencies() {
   };
 
   useEffect(() => {
-    onLoad();
-    // makeArray();
+    // onLoad();
   }, []);
 
   const [Data, setData] = useState([]);
@@ -121,50 +137,57 @@ export default function Dependencies() {
   };
 
   const onVersionSelect = (selectedList, selectedItem, item, item2) => {
-    console.log({ selectedList, selectedItem, item, item2 });
     let selectedDataa = { ...selectedData };
     for (let ele of item2.versions) {
       for (let ele2 of selectedDataa[item]) {
-        console.log(ele.serviceId + "===" + ele2);
         if (ele.serviceId === ele2) {
-          console.log("ele2");
-          console.log(ele2);
           let filteredData = selectedDataa[item].filter((item) => {
-            console.log(item + "!=" + ele2);
             return item != ele2;
           });
-          console.log("filteredData");
-          console.log(filteredData);
           selectedDataa[item] = filteredData;
         }
       }
-      // if (ele.serviceId === selectedDataa[item]) {
-
-      // }
     }
-    // selectedDataa[item] = [];
     selectedDataa[item].push(selectedItem.serviceId);
     setSelectedData(selectedDataa);
   };
+  const validateInput = () => {
+    let dataObj = {};
+    for (let selectedEle of Object.keys(selectedData)) {
+      if (selectedEle !== "serviceId") {
+        dataObj[selectedEle] = 0;
+      }
+    }
 
+    for (let globalEle of globalData) {
+      for (let objEle of Object.keys(dataObj)) {
+        if (globalEle.type === objEle) {
+          dataObj[objEle] += 1;
+        }
+      }
+    }
+    let result = false;
+    for (let selectedEle of Object.keys(selectedData)) {
+      if (selectedEle !== "serviceId") {
+        if (selectedData[selectedEle].length !== dataObj[selectedEle]) {
+          console.log("MISSINGGG VALUE");
+          result = true;
+          break;
+        }
+      }
+    }
+    return result;
+    // }
+  };
   const onSubmit = async () => {
-    // let data = {
-    //   serviceId: localStorage.getItem("serviceID"),
-    //   requiredRamLimit: Number(resrcLimit),
-    //   requiredRamReservation: Number(resrcRes),
-    //   mounts: mount,
-    //   ports: port,
-    //   database: {
-    //     databaseName: DBName,
-    //     databaseType: DBType,
-    //   },
-    // };
-    let res = await axiosApiInstance.post(
-      "service_mgmt/metadata/package",
-      selectedData
-    );
-    console.log(res);
-    history.push("/usecase");
+    if (!validateInput()) {
+      let res = await axiosApiInstance.post(
+        "service_mgmt/metadata/package",
+        selectedData
+      );
+      console.log(res);
+      history.push("/usecase");
+    }
   };
 
   return (

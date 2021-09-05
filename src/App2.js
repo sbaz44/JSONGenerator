@@ -34,44 +34,78 @@ export default function App2({ data }) {
   }, []);
 
   const initForm = (formSchema) => {
+    let __formData = {};
     let _formData = {};
     let _validationSchema = {};
-    console.log(formSchema);
-    for (var key of Object.keys(formSchema)) {
-      _formData[key] = "";
 
-      if (formSchema[key].type === "text") {
-        if (formSchema[key].isNumber) {
-          _validationSchema[key] = Yup.number();
+    for (var item of data) {
+      console.log({ item });
+      __formData[item.elementName] = "";
+      // if (formSchema[key].type === "text") {
+      if (item.type === "text") {
+        if (item.isNumber) {
+          _validationSchema[item.elementName] = Yup.number();
         } else {
-          _validationSchema[key] = Yup.string();
+          _validationSchema[item.elementName] = Yup.string();
         }
-      } else if (formSchema[key].type === "email") {
-        _validationSchema[key] = Yup.string().email();
-      } else if (formSchema[key].type === "select") {
-        _validationSchema[key] = Yup.string().oneOf(
-          formSchema[key].options.map((o) => o)
+      } else if (item.type === "email") {
+        _validationSchema[item.elementName] = Yup.string().email();
+      } else if (item.type === "select") {
+        _validationSchema[item.elementName] = Yup.string().oneOf(
+          item.options.map((o) => o)
         );
-      } else if (formSchema[key].type === "radio") {
-        _validationSchema[key] = Yup.string().oneOf(
-          formSchema[key].options.map((o) => o)
+      } else if (item.type === "radio") {
+        _validationSchema[item.elementName] = Yup.string().oneOf(
+          item.options.map((o) => o)
         );
-      } else if (formSchema[key].type === "checkbox") {
-        _validationSchema[key] = Yup.array()
+      } else if (item.type === "checkbox") {
+        _validationSchema[item.elementName] = Yup.array()
           .required()
           .min(1, "Please select atleast one option");
       }
-      if (formSchema[key].required) {
-        _validationSchema[key] = _validationSchema[key].required("Required");
+      if (item.required) {
+        _validationSchema[item.elementName] =
+          _validationSchema[item.elementName].required("Required");
       }
     }
+    console.log({ __formData, _validationSchema });
+    // for (var key of Object.keys(formSchema)) {
+    //   _formData[key] = "";
 
-    setFormData(_formData);
+    //   if (formSchema[key].type === "text") {
+    //     if (formSchema[key].isNumber) {
+    //       _validationSchema[key] = Yup.number();
+    //     } else {
+    //       _validationSchema[key] = Yup.string();
+    //     }
+    //   } else if (formSchema[key].type === "email") {
+    //     _validationSchema[key] = Yup.string().email();
+    //   } else if (formSchema[key].type === "select") {
+    //     _validationSchema[key] = Yup.string().oneOf(
+    //       formSchema[key].options.map((o) => o)
+    //     );
+    //   } else if (formSchema[key].type === "radio") {
+    //     _validationSchema[key] = Yup.string().oneOf(
+    //       formSchema[key].options.map((o) => o)
+    //     );
+    //   } else if (formSchema[key].type === "checkbox") {
+    //     _validationSchema[key] = Yup.array()
+    //       .required()
+    //       .min(1, "Please select atleast one option");
+    //   }
+    //   if (formSchema[key].required) {
+    //     _validationSchema[key] = _validationSchema[key].required("Required");
+    //   }
+    // }
+    // console.log("key");
+
+    // console.log({ _formData, _validationSchema });
+    setFormData(__formData);
     setValidationSchema(Yup.object().shape({ ..._validationSchema }));
   };
 
   const getFormElement = (elementName, elementSchema) => {
-    console.log(elementName, elementSchema);
+    console.log({ elementName, elementSchema });
     const props = {
       name: elementName,
       label: elementSchema.label,
@@ -103,16 +137,22 @@ export default function App2({ data }) {
 
   return (
     <div>
-      {console.log(validationSchema)}
+      {/* {console.log("validationSchema")}
+      {console.log(validationSchema)} */}
       <Form
         enableReinitialize
         initialValues={formData}
         validationSchema={validationSchema}
         onSubmit={onSubmit}
       >
-        {Object.keys(data).map((key, ind) => (
-          <div key={key}>{getFormElement(key, data[key])}</div>
+        {data.map((item, index) => (
+          <div key={item.elementName}>
+            {getFormElement(item.elementName, item)}
+          </div>
         ))}
+        {/* {Object.keys(data).map((key, ind) => (
+          <div key={key}>{getFormElement(key, data[key])}</div>
+        ))} */}
         <SubmitButton title="Submit" />
       </Form>
     </div>

@@ -13,31 +13,31 @@ import Inputbox from "../components/Inputbox";
 import { sortableContainer, sortableElement } from "react-sortable-hoc";
 import { arrayMoveImmutable } from "array-move";
 
-const SortableItem = sortableElement(({ value }) => (
-  <div>{getGraphElement(value)}</div>
+const SortableItem = sortableElement(({ value, title }) => (
+  <div>{getGraphElement(value, title)}</div>
 ));
 
-const getGraphElement = (type) => {
+const getGraphElement = (type, title) => {
   if (type === "Bar Graph") {
-    return <VerticalBar />;
+    return <VerticalBar title={title} />;
   }
   if (type === "Pie Chart") {
-    return <PieChart />;
+    return <PieChart title={title} />;
   }
   if (type === "Doughnut Chart") {
-    return <DoughnutChart />;
+    return <DoughnutChart title={title} />;
   }
   if (type === "Stacked Chart") {
-    return <StackedBarChart />;
+    return <StackedBarChart title={title} />;
   }
   if (type === "Group Chart") {
-    return <GroupedBarChart />;
+    return <GroupedBarChart title={title} />;
   }
   if (type === "Gauge") {
-    return <Gauge />;
+    return <Gauge title={title} />;
   }
   if (type === "Text Card") {
-    return <TextCard />;
+    return <TextCard title={title} />;
   }
 };
 
@@ -58,7 +58,7 @@ const UserInput = (data) => {
         label="Title"
         value={data.value}
         onChange={data.onChange}
-        // onFocus={data.onFocus}
+        onFocus={(event) => event.target.select()}
       />
     </div>
   );
@@ -80,7 +80,7 @@ export default function Analytics() {
     const data = [...elementsList];
     let obj = {
       type: type,
-      label: "Key name",
+      title: "Key name",
     };
     // let key = "element" + Object.keys(elementsList).length;
     // data[key] = obj;
@@ -90,7 +90,7 @@ export default function Analytics() {
 
   const handleChange = (event, i) => {
     let data = [...elementsList];
-    data[i].label = event.target.value;
+    data[i].title = event.target.value;
     setElementList(data);
   };
 
@@ -123,7 +123,7 @@ export default function Analytics() {
             <UserInput
               onChange={(e) => handleChange(e, index)}
               key={index + 15}
-              value={item.label}
+              value={item.title}
               title={item.type}
               index={index + 1}
               onClick={() => removeInput(index)}
@@ -156,6 +156,7 @@ export default function Analytics() {
               key={`item-${item.type}`}
               index={index}
               value={item.type}
+              title={item.title}
             />
           ))}
           {/* {Object.keys(elementsList).map(

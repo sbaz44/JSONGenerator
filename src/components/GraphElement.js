@@ -83,57 +83,81 @@ const options = {
       },
     ],
   },
+  animation: { duration: 0 },
 };
 
-export const VerticalBar = () => (
+export const VerticalBar = (props) => (
   <div style={{ width: "40vw" }}>
     <div className="header">
-      <h1 className="title">Vertical Bar Chart</h1>
+      <h1 className="title">
+        {props.title && props.title !== "Key name"
+          ? props.title
+          : "Vertical Bar Chart"}
+      </h1>
     </div>
     <Bar data={data} options={options} />
   </div>
 );
 
-export const PieChart = () => (
+export const PieChart = (props) => (
   <div style={{ width: "40vw" }}>
     <div className="header">
-      <h1 className="title">Pie Chart</h1>
+      <h1 className="title">
+        {" "}
+        {props.title && props.title !== "Key name" ? props.title : "Pie Chart"}
+      </h1>
     </div>
     <Pie data={data} options={options} />
   </div>
 );
 
-export const DoughnutChart = () => (
+export const DoughnutChart = (props) => (
   <div style={{ width: "40vw" }}>
     <div className="header">
-      <h1 className="title">Doughnut Chart</h1>
+      <h1 className="title">
+        {props.title && props.title !== "Key name"
+          ? props.title
+          : "Doughnut Chart"}
+      </h1>
     </div>
     <Doughnut data={data} options={options} />
   </div>
 );
 
-export const StackedBarChart = () => (
+export const StackedBarChart = (props) => (
   <div style={{ width: "40vw" }}>
     <div className="header">
-      <h1 className="title">Stacked Bar Chart</h1>
+      <h1 className="title">
+        {props.title && props.title !== "Key name"
+          ? props.title
+          : "Stacked Bar Chart"}
+      </h1>
     </div>
     <Bar data={stackData} options={options} />
   </div>
 );
 
-export const GroupedBarChart = () => (
+export const GroupedBarChart = (props) => (
   <div style={{ width: "40vw" }}>
     <div className="header">
-      <h1 className="title">Grouped Bar Chart</h1>
+      <h1 className="title">
+        {props.title && props.title !== "Key name"
+          ? props.title
+          : "Grouped Bar Chart"}
+      </h1>
     </div>
     <Bar data={groupData} options={options} />
   </div>
 );
 
-export const Gauge = () => (
+export const Gauge = (props) => (
   <div style={{ width: "40vw" }}>
     <div className="header">
-      <h1 className="title">Gauge Chart</h1>
+      <h1 className="title">
+        {props.title && props.title !== "Key name"
+          ? props.title
+          : "Gauge Chart"}
+      </h1>
     </div>
     <GaugeChart
       id="gauge-chart4"

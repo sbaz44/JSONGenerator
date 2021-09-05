@@ -101,7 +101,6 @@ export default function Service() {
         var idx2 = selectedHW.findIndex((q) => q === ele);
 
         var removed = serviceHWSelectedd.splice(idx, 1);
-        console.log(idx2 + " <=" + 0);
         if (idx2 !== -1) {
           var removed2 = selectedHW.splice(idx2, 1);
         }
@@ -153,20 +152,36 @@ export default function Service() {
       _errors["isOSEmpty"] = true;
     }
     setErrors(_errors);
-    // let data = {
-    //   accessKey: accessKey,
-    //   serviceName: serviceName,
-    //   description: serviceDesc,
-    //   serviceType: serviceType,
-    //   version: serviceVersion,
-    //   outputType: selectedOutputType,
-    //   compatibleOsVersions: serviceOSSelected,
-    //   compatibleHardwareVersions: serviceHWSelected,
-    // };
-    // let res = await axiosApiInstance.post("service_mgmt/", data);
-    // console.log(res);
-    // history.push("/resource");
-    // localStorage.setItem("serviceID", res.data.serviceId);
+
+    if (
+      accessKey === "" ||
+      serviceName === "" ||
+      serviceDesc === "" ||
+      serviceType === "" ||
+      selectedOutputType === "" ||
+      HWSelected.length === 0 ||
+      serviceOSSelected.length === 0 ||
+      serviceVersion === ""
+    ) {
+      console.log("MISSING VALUE");
+      return;
+    }
+
+    console.log("HERE!");
+    let data = {
+      accessKey: accessKey,
+      serviceName: serviceName,
+      description: serviceDesc,
+      serviceType: serviceType,
+      version: serviceVersion,
+      outputType: selectedOutputType,
+      compatibleOsVersions: serviceOSSelected,
+      compatibleHardwareVersions: serviceHWSelected,
+    };
+    let res = await axiosApiInstance.post("service_mgmt/", data);
+    console.log(res);
+    history.push("/resource");
+    localStorage.setItem("serviceID", res.data.serviceId);
   };
 
   const clearError = (name) => {
@@ -178,7 +193,6 @@ export default function Service() {
   };
   return (
     <div className="service-wrapper">
-      {console.log({ HWSelected, serviceOSSelected })}
       <div className="cardd card-3">
         <h1>Service</h1>
         <div className="service__unique__wrapper">
