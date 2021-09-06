@@ -21,6 +21,17 @@ const MountCard = (data) => {
         onFocus={data.onFocus2}
         value={data.value2}
       />
+      {data.isReadOnly && (
+        <label>
+          Read Only
+          <input
+            type="checkbox"
+            defaultChecked={data.ReadOnly}
+            // defaultChecked={checked}
+            onChange={data.onCBChange}
+          />
+        </label>
+      )}
     </div>
   );
 };
@@ -40,24 +51,14 @@ export default function Resource() {
   const [pPortError, setPPortError] = useState([false]);
   const [tPortError, setTPortError] = useState([false]);
 
-  const [resrcLimit, setResrcLimit] = useState("");
-  const [resrcRes, setResrcRes] = useState("");
+  const [resrcLimit, setResrcLimit] = useState("100");
+  const [resrcRes, setResrcRes] = useState("50");
   const [DBName, setDBName] = useState("");
   const [DBType, setDBType] = useState("mongo");
 
-  const [mount, setMount] = useState([
-    {
-      Source: "",
-      Target: "",
-    },
-  ]);
+  const [mount, setMount] = useState([]);
 
-  const [port, setPort] = useState([
-    {
-      PublishedPort: "",
-      TargetPort: "",
-    },
-  ]);
+  const [port, setPort] = useState([]);
 
   const addMount = () => {
     let _mount = [...mount];
@@ -66,6 +67,7 @@ export default function Resource() {
     let obj = {
       Source: "",
       Target: "",
+      ReadOnly: true,
     };
     _mount.push(obj);
     setMount(_mount);
@@ -91,11 +93,9 @@ export default function Resource() {
 
   const portHandleChange = (e, i, n) => {
     if (isNaN(e.target.value)) {
-      console.log("object");
+      console.log("Not A Number");
       return;
     } else {
-      console.log("object2");
-
       const onlyNums = e.target.value.replace(/[^0-9]/g, "");
 
       let data = [...port];
@@ -112,58 +112,154 @@ export default function Resource() {
     let _tPortError = [...tPortError];
     let _errors = { ...errors };
 
-    for (let i = 0; i < _mount.length; i++) {
-      if (_mount[i].Source === "") {
-        _srcError[i] = true;
+    if (_mount.length && _port.length) {
+      for (let i = 0; i < _mount.length; i++) {
+        if (_mount[i].Source === "") {
+          _srcError[i] = true;
+        }
+        if (_mount[i].Target === "") {
+          _targetError[i] = true;
+        }
       }
-      if (_mount[i].Target === "") {
-        _targetError[i] = true;
-      }
-    }
 
-    for (let i = 0; i < _port.length; i++) {
-      if (_port[i].PublishedPort === "") {
-        _pPortError[i] = true;
+      for (let i = 0; i < _port.length; i++) {
+        // if (_port[i].PublishedPort === "") {
+        //   _pPortError[i] = true;
+        // }
+        if (_port[i].TargetPort === "") {
+          _tPortError[i] = true;
+        }
       }
-      if (_port[i].TargetPort === "") {
-        _tPortError[i] = true;
-      }
-    }
 
-    if (resrcLimit === "") {
-      _errors["isResourceLimitEmpty"] = true;
+      if (resrcLimit === "") {
+        _errors["isResourceLimitEmpty"] = true;
+      }
+      if (resrcRes === "") {
+        _errors["isResrcResEmpty"] = true;
+      }
+      // if (DBName === "") {
+      //   _errors["isDBNameEmpty"] = true;
+      // }
+      setErrors(_errors);
+      setSrcError(_srcError);
+      setTargetError(_targetError);
+      setTPortError(_tPortError);
+      setPPortError(_pPortError);
+      const __srcError = _srcError.includes(true);
+      const __targetError = _targetError.includes(true);
+      const __pPortError = _pPortError.includes(true);
+      const __tPortError = _tPortError.includes(true);
+      if (
+        __srcError ||
+        __targetError ||
+        __pPortError ||
+        __tPortError ||
+        resrcLimit === "" ||
+        resrcRes === ""
+        // DBName === ""
+      ) {
+        return true;
+      } else return false;
     }
-    if (resrcRes === "") {
-      _errors["isResrcResEmpty"] = true;
+    if (_mount.length) {
+      for (let i = 0; i < _mount.length; i++) {
+        if (_mount[i].Source === "") {
+          _srcError[i] = true;
+        }
+        if (_mount[i].Target === "") {
+          _targetError[i] = true;
+        }
+      }
+
+      if (resrcLimit === "") {
+        _errors["isResourceLimitEmpty"] = true;
+      }
+      if (resrcRes === "") {
+        _errors["isResrcResEmpty"] = true;
+      }
+      // if (DBName === "") {
+      //   _errors["isDBNameEmpty"] = true;
+      // }
+      setErrors(_errors);
+      setSrcError(_srcError);
+      setTargetError(_targetError);
+      setTPortError(_tPortError);
+      setPPortError(_pPortError);
+      const __srcError = _srcError.includes(true);
+      const __targetError = _targetError.includes(true);
+
+      if (
+        __srcError ||
+        __targetError ||
+        resrcLimit === "" ||
+        resrcRes === ""
+        // DBName === ""
+      ) {
+        return true;
+      } else return false;
     }
-    if (DBName === "") {
-      _errors["isDBNameEmpty"] = true;
+    if (_port.length) {
+      for (let i = 0; i < _port.length; i++) {
+        // if (_port[i].PublishedPort === "") {
+        //   _pPortError[i] = true;
+        // }
+        if (_port[i].TargetPort === "") {
+          _tPortError[i] = true;
+        }
+      }
+
+      if (resrcLimit === "") {
+        _errors["isResourceLimitEmpty"] = true;
+      }
+      if (resrcRes === "") {
+        _errors["isResrcResEmpty"] = true;
+      }
+      // if (DBName === "") {
+      //   _errors["isDBNameEmpty"] = true;
+      // }
+      setErrors(_errors);
+      setSrcError(_srcError);
+      setTargetError(_targetError);
+      setTPortError(_tPortError);
+      setPPortError(_pPortError);
+      const __pPortError = _pPortError.includes(true);
+      const __tPortError = _tPortError.includes(true);
+      if (
+        __pPortError ||
+        __tPortError ||
+        resrcLimit === "" ||
+        resrcRes === ""
+        // DBName === ""
+      ) {
+        return true;
+      } else return false;
     }
-    setErrors(_errors);
-    setSrcError(_srcError);
-    setTargetError(_targetError);
-    setTPortError(_tPortError);
-    setPPortError(_pPortError);
-    const __srcError = _srcError.includes(true);
-    const __targetError = _targetError.includes(true);
-    const __pPortError = _pPortError.includes(true);
-    const __tPortError = _tPortError.includes(true);
-    if (
-      __srcError ||
-      __targetError ||
-      __pPortError ||
-      __tPortError ||
-      resrcLimit === "" ||
-      resrcRes === "" ||
-      DBName === ""
-    ) {
-      return true;
-    } else return false;
   };
 
   const onSubmit = async () => {
     if (!validateDynamicInput()) {
+      // if (true) {
       console.log("ALL OK!");
+
+      let data = {
+        serviceId: localStorage.getItem("serviceID"),
+        mounts: mount,
+        ports: port,
+        database: {
+          databaseName: DBName,
+          databaseType: DBType,
+        },
+      };
+      if (resrcLimit) data.requiredRamLimit = Number(resrcLimit);
+
+      if (resrcRes) data.requiredRamReservation = Number(resrcRes);
+      console.log(data);
+      let res = await axiosApiInstance.post(
+        "service_mgmt/metadata/service/",
+        data
+      );
+      console.log(res);
+      history.push("/dependencies");
     } else {
       console.log("SOMETHING MISSING!");
     }
@@ -178,24 +274,6 @@ export default function Resource() {
     //   }
     //   console.log(portEle.PublishedPort);
     // }
-
-    // let data = {
-    //   serviceId: localStorage.getItem("serviceID"),
-    //   requiredRamLimit: Number(resrcLimit),
-    //   requiredRamReservation: Number(resrcRes),
-    //   mounts: mount,
-    //   ports: port,
-    //   database: {
-    //     databaseName: DBName,
-    //     databaseType: DBType,
-    //   },
-    // };
-    // let res = await axiosApiInstance.post(
-    //   "service_mgmt/metadata/service/",
-    //   data
-    // );
-    // console.log(res);
-    // history.push("/dependencies");
   };
 
   const clearSrcError = (i) => {
@@ -229,10 +307,14 @@ export default function Resource() {
   };
   return (
     <div className="service-wrapper">
-      {console.log(port)}
+      {console.log(mount)}
       <div className="cardd card-5 card-6">
         <h2>Mounts</h2>
-        <Button onClick={addMount} style={{ alignSelf: "start" }} name="Add" />
+        <Button
+          onClick={addMount}
+          style={{ alignSelf: "start" }}
+          name="Add Mount"
+        />
         <div className="resource_mount_wrapper">
           {mount.map((item, index) => (
             <MountCard
@@ -245,15 +327,23 @@ export default function Resource() {
               onFocus2={() => clearTargetError(index)}
               error={srcError[index]}
               error2={targetError[index]}
+              ReadOnly={item.ReadOnly}
               onSrcChange={(e) => mountHandleChange(e, index, "Source")}
               onDestChange={(e) => mountHandleChange(e, index, "Target")}
+              onCBChange={(e) => {
+                let data = [...mount];
+                mount[index].ReadOnly = !mount[index].ReadOnly;
+                console.log(data);
+                setMount(data);
+              }}
+              isReadOnly
             />
           ))}
         </div>
         <h2>Resources</h2>
 
         <Inputbox
-          label="Resource Limit"
+          label="Resource Limit (in MB)"
           value={resrcLimit}
           onChange={(e) => {
             if (isNaN(e.target.value)) {
@@ -262,10 +352,15 @@ export default function Resource() {
             const onlyNums = e.target.value.replace(/[^0-9]/g, "");
             setResrcLimit(onlyNums);
           }}
+          onFocus={() => {
+            let data = { ...errors };
+            data.isResourceLimitEmpty = false;
+            setErrors(data);
+          }}
           error={errors["isResourceLimitEmpty"]}
         />
         <Inputbox
-          label="Resource Reservation"
+          label="Resource Reservation (in MB)"
           value={resrcRes}
           onChange={(e) => {
             if (isNaN(e.target.value)) {
@@ -274,10 +369,19 @@ export default function Resource() {
             const onlyNums = e.target.value.replace(/[^0-9]/g, "");
             setResrcRes(onlyNums);
           }}
+          onFocus={() => {
+            let data = { ...errors };
+            data.isResrcResEmpty = false;
+            setErrors(data);
+          }}
           error={errors["isResrcResEmpty"]}
         />
         <h2>Ports</h2>
-        <Button onClick={addPort} style={{ alignSelf: "start" }} name="Add" />
+        <Button
+          onClick={addPort}
+          style={{ alignSelf: "start" }}
+          name="Add Port"
+        />
         <div className="resource_mount_wrapper">
           {port.map((item, index) => (
             <MountCard
@@ -286,9 +390,9 @@ export default function Resource() {
               value2={item.TargetPort}
               label1="Published Port"
               label2="Target Port"
-              onFocus={() => clearPPortError(index)}
+              // onFocus={() => clearPPortError(index)}
               onFocus2={() => clearTPortError(index)}
-              error={pPortError[index]}
+              // error={pPortError[index]}
               error2={tPortError[index]}
               onSrcChange={(e) => portHandleChange(e, index, "PublishedPort")}
               onDestChange={(e) => portHandleChange(e, index, "TargetPort")}
@@ -319,11 +423,17 @@ export default function Resource() {
           onChange={(e) => {
             setDBName(e.target.value);
           }}
+          onFocus={() => {
+            let data = { ...errors };
+            data.isDBNameEmpty = false;
+            setErrors(data);
+          }}
           error={errors["isDBNameEmpty"]}
         />
         <Inputbox
           label="Database Type"
           value={DBType}
+
           // value={serviceName}
           // onChange={(e) => {
           //   setServiceName(e.target.value);

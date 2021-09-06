@@ -12,6 +12,8 @@ import {
 import Inputbox from "../components/Inputbox";
 import { sortableContainer, sortableElement } from "react-sortable-hoc";
 import { arrayMoveImmutable } from "array-move";
+import { useHistory } from "react-router";
+import { axiosApiInstance } from "../helpers/request";
 
 const SortableItem = sortableElement(({ value, title }) => (
   <div>{getGraphElement(value, title)}</div>
@@ -65,6 +67,7 @@ const UserInput = (data) => {
 };
 
 export default function Analytics() {
+  let history = useHistory();
   const [type, setType] = useState([
     "Bar Graph",
     "Pie Chart",
@@ -104,6 +107,20 @@ export default function Analytics() {
     data.splice(i, 1);
     console.log(data);
     setElementList(data);
+  };
+
+  const postData = async () => {
+    let data = {
+      serviceId: localStorage.getItem("serviceID"),
+      details: elementsList,
+    };
+    let res = await axiosApiInstance.post(
+      "service_mgmt/metadata/analytics",
+      data
+    );
+    console.log(res);
+    alert("Final Page reached");
+    // history.push("/analytics");
   };
   return (
     <div className="analytics-wrapper">
@@ -147,7 +164,7 @@ export default function Analytics() {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         /> */}
-        <Button name="Submit" />
+        <Button name="Submit" onClick={postData} />
       </div>
       <div className="card card-3 cardAdjust">
         <SortableContainer onSortEnd={onSortEnd}>

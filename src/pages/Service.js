@@ -34,6 +34,7 @@ export default function Service() {
   ]);
   const [serviceOSSelected, setServiceOSSelected] = useState([]);
   const [outputTypeOption, setoutputTypeOption] = useState([
+    "None",
     "Alert",
     "Report",
     "Both",
@@ -158,6 +159,7 @@ export default function Service() {
       serviceName === "" ||
       serviceDesc === "" ||
       serviceType === "" ||
+      isServiceNameUnique === false ||
       selectedOutputType === "" ||
       HWSelected.length === 0 ||
       serviceOSSelected.length === 0 ||

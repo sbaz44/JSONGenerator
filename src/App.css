@@ -397,6 +397,7 @@ button {
 
 .multiSelect_wrapper {
   display: flex;
+  flex-direction: column;
 }
 
 .multiSelect_container {
@@ -404,7 +405,11 @@ button {
 }
 
 .version_container {
-  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+}
+.version_children {
+  margin: 0 1vw;
 }
 .resource_mount_wrapper {
   display: grid;
@@ -416,4 +421,9 @@ button {
   width: 20vw;
   padding: 1vw;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+}
+.dependency_container {
+  padding: 1vw;
+  border-radius: 12px;
+  margin-bottom: 2vw;
 }

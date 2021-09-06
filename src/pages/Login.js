@@ -4,8 +4,8 @@ import { API_URL } from "../helpers/request";
 export default function Login() {
   let history = useHistory();
 
-  const [username, setUsername] = useState("dipesh");
-  const [password, setPassword] = useState("dipesh@123");
+  const [username, setUsername] = useState("diycam");
+  const [password, setPassword] = useState("admin@123");
 
   const handleClick = async () => {
     let res = await fetch(API_URL + "users/login", {

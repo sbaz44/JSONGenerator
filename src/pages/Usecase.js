@@ -1,5 +1,8 @@
 import { useState } from "react";
+import Button from "../components/Button";
 import App2 from "../App2";
+import { axiosApiInstance } from "../helpers/request";
+import { useHistory } from "react-router";
 const InputBox = (data) => {
   return (
     <div className="input-container">
@@ -201,6 +204,8 @@ const Checkbox = (data) => {
 };
 
 export default function Usecase() {
+  let history = useHistory();
+
   const [elementsList, setElementList] = useState([]);
   const [isAdded, setIsAdded] = useState(false);
 
@@ -211,7 +216,9 @@ export default function Usecase() {
       type: "text",
       label: "Key name",
       required: true,
-      isNumber: false,
+      options: {
+        isNumber: false,
+      },
     };
     // let key = "element" + Object.keys(elementsList).length;
     // data[key] = obj;
@@ -226,7 +233,9 @@ export default function Usecase() {
       type: "select",
       label: "Label",
       required: true,
-      options: [],
+      options: {
+        labels: [],
+      },
     };
     // let key = "element" + Object.keys(elementsList).length;
     data.push(obj);
@@ -240,7 +249,9 @@ export default function Usecase() {
       type: "radio",
       label: "Label",
       required: true,
-      options: [],
+      options: {
+        labels: [],
+      },
     };
     // let key = "element" + Object.keys(elementsList).length;
     data.push(obj);
@@ -269,9 +280,9 @@ export default function Usecase() {
 
   const selectChange = (event, index) => {
     const data = [...elementsList];
-    data[index].options = [];
+    data[index].options.labels = [];
     for (let i = 0; i < event.target.value; i++) {
-      data[index].options.push("");
+      data[index].options.labels.push("");
     }
     setElementList(data);
   };
@@ -285,14 +296,14 @@ export default function Usecase() {
 
   const checkNumberHandle = (i) => {
     const data = [...elementsList];
-    let required = data[i].isNumber;
-    data[i].isNumber = !required;
+    let required = data[i].options.isNumber;
+    data[i].options.isNumber = !required;
     setElementList(data);
   };
 
   const optionChange = (e, i, index) => {
     const data = [...elementsList];
-    data[index].options[i] = e.target.value;
+    data[index].options.labels[i] = e.target.value;
     setElementList(data);
   };
   const removeInput = (i) => {
@@ -319,6 +330,19 @@ export default function Usecase() {
     // document.body.removeChild(link);
     setIsAdded(true);
     // console.log(elementsList.data);
+  };
+
+  const postData = async () => {
+    let data = {
+      serviceId: localStorage.getItem("serviceID"),
+      details: elementsList,
+    };
+    let res = await axiosApiInstance.post(
+      "service_mgmt/metadata/usecase",
+      data
+    );
+    console.log(res);
+    history.push("/analytics");
   };
   return (
     <div className="App">
@@ -354,7 +378,7 @@ export default function Usecase() {
                 key={index + 98}
                 labelValue={item.label}
                 required={item.required}
-                options={item.options}
+                options={item.options.labels}
                 onFocus={(event) => event.target.select()}
                 onChange={(e) => handleChange(e, index)}
                 selectChange={(e) => selectChange(e, index)}
@@ -371,7 +395,7 @@ export default function Usecase() {
               <Radiobox
                 key={index + 36}
                 labelValue={item.label}
-                options={item.options}
+                options={item.options.labels}
                 required={item.required}
                 onChange={(e) => handleChange(e, index)}
                 selectChange={(e) => selectChange(e, index)}
@@ -390,7 +414,7 @@ export default function Usecase() {
                 key={index + 48}
                 labelValue={item.label}
                 required={item.required}
-                options={item.options}
+                options={item.options.labels}
                 onFocus={(event) => event.target.select()}
                 onChange={(e) => handleChange(e, index)}
                 selectChange={(e) => selectChange(e, index)}
@@ -403,140 +427,15 @@ export default function Usecase() {
             );
           } else return null;
         })}
-        {/* {Object.keys(elementsList).map((item, index) => {
-          let data = elementsList[item];
-          if (elementsList[item].type === "text") {
-            return (
-              <InputBox
-                key={index + 22}
-                value={data.label}
-                required={data.required}
-                isNumber={data.isNumber}
-                onChange={(e) => handleChange(e, item)}
-                onFocus={(event) => event.target.select()}
-                remove
-                removeInput={() => removeInput(item)}
-                checkBoxHandle={() => checkBoxHandle(item)}
-                checkNumberHandle={() => checkNumberHandle(item)}
-              />
-            );
-          }
-          if (elementsList[item].type === "select") {
-            return (
-              <Dropbox
-                key={index + 33}
-                labelValue={data.label}
-                required={data.required}
-                options={data.options}
-                onFocus={(event) => event.target.select()}
-                onChange={(e) => handleChange(e, item)}
-                selectChange={(e) => selectChange(e, item)}
-                optionHandlee={(e, value) => {
-                  optionChange(e, value, item);
-                }}
-                removeInput={() => removeInput(item)}
-                checkBoxHandle={() => checkBoxHandle(item)}
-              />
-            );
-          }
-          if (elementsList[item].type === "radio") {
-            return (
-              <Radiobox
-                key={index + 33}
-                labelValue={data.label}
-                options={data.options}
-                required={data.required}
-                onChange={(e) => handleChange(e, item)}
-                selectChange={(e) => selectChange(e, item)}
-                onFocus={(event) => event.target.select()}
-                optionHandlee={(e, value) => {
-                  optionChange(e, value, item);
-                }}
-                removeInput={() => removeInput(item)}
-                checkBoxHandle={() => checkBoxHandle(item)}
-              />
-            );
-          }
-          if (elementsList[item].type === "checkbox") {
-            return (
-              <Checkbox
-                key={index + 33}
-                labelValue={data.label}
-                required={data.required}
-                options={data.options}
-                onFocus={(event) => event.target.select()}
-                onChange={(e) => handleChange(e, item)}
-                selectChange={(e) => selectChange(e, item)}
-                optionHandlee={(e, value) => {
-                  optionChange(e, value, item);
-                }}
-                removeInput={() => removeInput(item)}
-                checkBoxHandle={() => checkBoxHandle(item)}
-              />
-            );
-          }
-          return null;
-        })} */}
-        {/* {elementsList.map((item, index) => {
-          if (item.type === "text") {
-            return (
-              <InputBox
-                key={index + 22}
-                value={item.label}
-                required={item.required}
-                onChange={(e) => handleChange(e, index)}
-                onFocus={(event) => event.target.select()}
-                remove
-                removeInput={() => removeInput(index)}
-                checkBoxHandle={() => checkBoxHandle(index)}
-              />
-            );
-          }
-          if (item.type === "select") {
-            return (
-              <Dropbox
-                key={index + 33}
-                labelValue={item.label}
-                required={item.required}
-                options={item.options}
-                onChange={(e) => handleChange(e, index)}
-                selectChange={(e) => selectChange(e, index)}
-                optionChange={(e) => optionChange(e, index)}
-                optionHandlee={(e, value) => {
-                  optionChange(e, value, index);
-                }}
-                removeInput={() => removeInput(index)}
-                checkBoxHandle={() => checkBoxHandle(index)}
-              />
-            );
-          }
-          if (item.type === "radio") {
-            return (
-              <Radiobox
-                key={index + 33}
-                labelValue={item.label}
-                options={item.options}
-                required={item.required}
-                onChange={(e) => handleChange(e, index)}
-                selectChange={(e) => selectChange(e, index)}
-                optionChange={(e) => optionChange(e, index)}
-                optionHandlee={(e, value) => {
-                  optionChange(e, value, index);
-                }}
-                removeInput={() => removeInput(index)}
-                checkBoxHandle={() => checkBoxHandle(index)}
-              />
-            );
-          }
-          return null;
-        })} */}
       </div>
-      {elementsList.length > 0 && (
+      {/* {elementsList.length > 0 && (
         <button onClick={downloadJSON}>Download JSON</button>
-      )}
+      )} */}
 
-      <pre>{JSON.stringify(elementsList, null, 4)}</pre>
-      {isAdded && <App2 data={elementsList} />}
+      {/* <pre>{JSON.stringify(elementsList, null, 4)}</pre>
+      {isAdded && <App2 data={elementsList} />} */}
+
+      <Button name="Submit" onClick={postData} />
     </div>
   );
 }

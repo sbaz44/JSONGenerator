@@ -26,6 +26,8 @@ const formSchema = {
 };
 
 export default function App2({ data }) {
+  console.log("data");
+  console.log(data);
   const [formData, setFormData] = useState({});
   const [validationSchema, setValidationSchema] = useState({});
 
@@ -35,13 +37,11 @@ export default function App2({ data }) {
 
   const initForm = (formSchema) => {
     let __formData = {};
-    let _formData = {};
     let _validationSchema = {};
 
     for (var item of data) {
       console.log({ item });
       __formData[item.elementName] = "";
-      // if (formSchema[key].type === "text") {
       if (item.type === "text") {
         if (item.isNumber) {
           _validationSchema[item.elementName] = Yup.number();
@@ -52,11 +52,11 @@ export default function App2({ data }) {
         _validationSchema[item.elementName] = Yup.string().email();
       } else if (item.type === "select") {
         _validationSchema[item.elementName] = Yup.string().oneOf(
-          item.options.map((o) => o)
+          item.options.labels.map((o) => o)
         );
       } else if (item.type === "radio") {
         _validationSchema[item.elementName] = Yup.string().oneOf(
-          item.options.map((o) => o)
+          item.options.labels.map((o) => o)
         );
       } else if (item.type === "checkbox") {
         _validationSchema[item.elementName] = Yup.array()
@@ -109,8 +109,8 @@ export default function App2({ data }) {
     const props = {
       name: elementName,
       label: elementSchema.label,
-      options: elementSchema.options,
-      isNumber: elementSchema.isNumber,
+      options: elementSchema.options.labels,
+      isNumber: elementSchema.options.isNumber,
     };
 
     if (elementSchema.type === "text" || elementSchema.type === "email") {

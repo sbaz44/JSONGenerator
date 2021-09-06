@@ -89,7 +89,7 @@ export default function Dependencies() {
   };
 
   useEffect(() => {
-    // onLoad();
+    onLoad();
   }, []);
 
   const [Data, setData] = useState([]);
@@ -194,7 +194,7 @@ export default function Dependencies() {
     <div className="card card-4">
       Dependencies
       {Object.keys(obj).map((item, index) => (
-        <div key={item + index}>
+        <div key={item + index} className="dependency_container card-5">
           <h2>{item}</h2>
           <div className="multiSelect_wrapper">
             <div className="multiSelect_container">
@@ -213,7 +213,7 @@ export default function Dependencies() {
               {globalData.map((item2, index) => {
                 if (item2.type === item) {
                   return (
-                    <div>
+                    <div className="version_children">
                       <p>{item2.subtype}</p>
                       <Multiselect
                         displayValue="versions"
