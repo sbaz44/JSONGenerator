@@ -4,8 +4,11 @@ import { API_URL } from "../helpers/request";
 export default function Login() {
   let history = useHistory();
 
-  const [username, setUsername] = useState("diycam");
+  const [username, setUsername] = useState("dipesh");
   const [password, setPassword] = useState("admin@123");
+  const [accessKey, setAccessKey] = useState(
+    "84d3468375dcd7759c22baf0db2c29a18abf4176"
+  );
 
   const handleClick = async () => {
     let res = await fetch(API_URL + "users/login", {
@@ -14,6 +17,7 @@ export default function Login() {
         "Content-Type": "application/json",
         username: username,
         password: password,
+        accessKey: accessKey,
       },
     });
     if (res.status === 200) {
@@ -49,6 +53,14 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
               value={password}
               type="password"
+            />
+          </div>
+          <div className="input-group">
+            <label htmlFor="accessKey">Access Key</label>
+            <input
+              onChange={(e) => setAccessKey(e.target.value)}
+              value={accessKey}
+              type="text"
             />
           </div>
           <button onClick={handleClick} className="primary">

@@ -14,6 +14,8 @@ import { sortableContainer, sortableElement } from "react-sortable-hoc";
 import { arrayMoveImmutable } from "array-move";
 import { useHistory } from "react-router";
 import { axiosApiInstance } from "../helpers/request";
+import Header from "../components/Header";
+import Sidenav from "../components/Sidenav";
 
 const SortableItem = sortableElement(({ value, title }) => (
   <div>{getGraphElement(value, title)}</div>
@@ -125,29 +127,33 @@ export default function Analytics() {
   return (
     <div className="analytics-wrapper">
       {console.log(elementsList)}
-      <div className="card card-3">
-        <div className="group_button">
-          {type.map((item, index) => (
-            <Button
-              onClick={() => typeClick(item)}
-              key={index + 36}
-              name={item}
-            />
-          ))}
-        </div>
-        <div className="type-wrapper">
-          {elementsList.map((item, index) => (
-            <UserInput
-              onChange={(e) => handleChange(e, index)}
-              key={index + 15}
-              value={item.title}
-              title={item.type}
-              index={index + 1}
-              onClick={() => removeInput(index)}
-            />
-          ))}
-        </div>
-        {/* {Object.keys(elementsList).map((item, index) => {
+      <Header name="Analytics" />
+      <div className="flex">
+        <Sidenav />
+        <div style={{ flex: "1" }}>
+          <div className="card card-3">
+            <div className="group_button">
+              {type.map((item, index) => (
+                <Button
+                  onClick={() => typeClick(item)}
+                  key={index + 36}
+                  name={item}
+                />
+              ))}
+            </div>
+            <div className="type-wrapper">
+              {elementsList.map((item, index) => (
+                <UserInput
+                  onChange={(e) => handleChange(e, index)}
+                  key={index + 15}
+                  value={item.title}
+                  title={item.type}
+                  index={index + 1}
+                  onClick={() => removeInput(index)}
+                />
+              ))}
+            </div>
+            {/* {Object.keys(elementsList).map((item, index) => {
           return (
             <UserInput
               onChange={(e) => handleChange(e, item)}
@@ -159,24 +165,24 @@ export default function Analytics() {
           );
         })} */}
 
-        {/* <Inputbox
+            {/* <Inputbox
           label="Title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         /> */}
-        <Button name="Submit" onClick={postData} />
-      </div>
-      <div className="card card-3 cardAdjust">
-        <SortableContainer onSortEnd={onSortEnd}>
-          {elementsList.map((item, index) => (
-            <SortableItem
-              key={`item-${item.type}`}
-              index={index}
-              value={item.type}
-              title={item.title}
-            />
-          ))}
-          {/* {Object.keys(elementsList).map(
+            <Button name="Submit" onClick={postData} />
+          </div>
+          <div className="card card-3 cardAdjust">
+            <SortableContainer onSortEnd={onSortEnd}>
+              {elementsList.map((item, index) => (
+                <SortableItem
+                  key={`item-${item.type}`}
+                  index={index}
+                  value={item.type}
+                  title={item.title}
+                />
+              ))}
+              {/* {Object.keys(elementsList).map(
             (item, index) => (
               <SortableItem
                 key={`item-${elementsList[item].type}`}
@@ -185,20 +191,22 @@ export default function Analytics() {
               />
             )
           )} */}
-          {/* {this.state.graphs.map((item, index) => (
+              {/* {this.state.graphs.map((item, index) => (
             <SortableItem
               key={`item-${item.type}`}
               index={index}
               value={item.type}
             />
           ))} */}
-          {/* {items.map((value, index) => (
+              {/* {items.map((value, index) => (
           <SortableItem key={`item-${value}`} index={index} value={value} />
         ))} */}
-        </SortableContainer>
-        {/* {Object.keys(elementsList).map((item, index) =>
+            </SortableContainer>
+            {/* {Object.keys(elementsList).map((item, index) =>
           displayElements(elementsList[item].type)
         )} */}
+          </div>
+        </div>
       </div>
     </div>
   );

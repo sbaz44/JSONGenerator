@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react";
 import { axiosApiInstance } from "../helpers/request";
 import Button from "../components/Button";
 import { useHistory } from "react-router-dom";
+import Header from "../components/Header";
+import Sidenav from "../components/Sidenav";
 
 export default function Dependencies() {
   let history = useHistory();
@@ -191,56 +193,62 @@ export default function Dependencies() {
   };
 
   return (
-    <div className="card card-4">
-      Dependencies
-      {Object.keys(obj).map((item, index) => (
-        <div key={item + index} className="dependency_container card-5">
-          <h2>{item}</h2>
-          <div className="multiSelect_wrapper">
-            <div className="multiSelect_container">
-              <Multiselect
-                isObject={false}
-                options={Object.keys(obj[item])}
-                onSelect={(selectedList, selectedItem) =>
-                  onSelect(selectedList, selectedItem, item)
-                }
-                onRemove={(selectedList, selectedItem) =>
-                  onRemove(selectedList, selectedItem, item)
-                }
-              />
+    <div className="service-wrapper">
+      <Header text="Dependencies" />
+      <div className="flex">
+        <Sidenav />
+        <div className="card card-4">
+          Dependencies
+          {Object.keys(obj).map((item, index) => (
+            <div key={item + index} className="dependency_container card-5">
+              <h2>{item}</h2>
+              <div className="multiSelect_wrapper">
+                <div className="multiSelect_container">
+                  <Multiselect
+                    isObject={false}
+                    options={Object.keys(obj[item])}
+                    onSelect={(selectedList, selectedItem) =>
+                      onSelect(selectedList, selectedItem, item)
+                    }
+                    onRemove={(selectedList, selectedItem) =>
+                      onRemove(selectedList, selectedItem, item)
+                    }
+                  />
+                </div>
+                <div className="version_container">
+                  {globalData.map((item2, index) => {
+                    if (item2.type === item) {
+                      return (
+                        <div className="version_children">
+                          <p>{item2.subtype}</p>
+                          <Multiselect
+                            displayValue="versions"
+                            singleSelect
+                            options={item2.versions}
+                            onSelect={(selectedList, selectedItem) =>
+                              onVersionSelect(
+                                selectedList,
+                                selectedItem,
+                                item,
+                                item2
+                              )
+                            }
+                          />
+                        </div>
+                      );
+                    }
+                  })}
+                </div>
+              </div>
             </div>
-            <div className="version_container">
-              {globalData.map((item2, index) => {
-                if (item2.type === item) {
-                  return (
-                    <div className="version_children">
-                      <p>{item2.subtype}</p>
-                      <Multiselect
-                        displayValue="versions"
-                        singleSelect
-                        options={item2.versions}
-                        onSelect={(selectedList, selectedItem) =>
-                          onVersionSelect(
-                            selectedList,
-                            selectedItem,
-                            item,
-                            item2
-                          )
-                        }
-                      />
-                    </div>
-                  );
-                }
-              })}
-            </div>
-          </div>
+          ))}
+          <Button
+            onClick={onSubmit}
+            style={{ alignSelf: "center" }}
+            name="Submit"
+          />
         </div>
-      ))}
-      <Button
-        onClick={onSubmit}
-        style={{ alignSelf: "center" }}
-        name="Submit"
-      />
+      </div>
     </div>
   );
 }

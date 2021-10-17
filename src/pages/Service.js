@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useHistory } from "react-router-dom";
 import Button from "../components/Button";
+import Header from "../components/Header";
 import Inputbox from "../components/Inputbox";
 import Popup from "../components/Popup";
+import Sidenav from "../components/Sidenav";
 import { axiosApiInstance } from "../helpers/request";
 import { useDebouncedEffect } from "../helpers/useDebounce";
 
@@ -17,10 +19,10 @@ export default function Service() {
     isOutputTypeEmpty: false,
     isOSEmpty: false,
     isHWEmpty: false,
+    isIconEmpty: false,
   });
 
   const [serviceName, setServiceName] = useState("");
-  const [accessKey, setAccessKey] = useState("");
   const [serviceType, setServiceType] = useState("");
   const [serviceDesc, setServiceDesc] = useState("");
   const [serviceVersion, setServiceVersion] = useState("");
@@ -40,6 +42,8 @@ export default function Service() {
     "Both",
   ]);
   const [selectedOutputType, setSelectedOutputType] = useState("");
+  const [image64, setImage64] = useState("");
+  const [file, setFile] = useState(null);
   const [serviceHWSelected, setServiceHWSelected] = useState([]);
   const [HWSelected, setHWSelected] = useState([]);
   const [isServiceNameUnique, setisServiceNameUnique] = useState(true);
@@ -62,7 +66,7 @@ export default function Service() {
         "service_mgmt/unique_check?serviceName=" + serviceName,
         {
           headers: {
-            accessKey: "7dab8b8af1c9e43086f55be1f491688fbabcb624",
+            accessKey: "84d3468375dcd7759c22baf0db2c29a18abf4176",
           },
         }
       );
@@ -128,9 +132,9 @@ export default function Service() {
 
   const postData = async () => {
     let _errors = { ...errors };
-    if (accessKey === "") {
-      _errors["isAccessEmpty"] = true;
-    }
+    // if (accessKey === "") {
+    //   _errors["isAccessEmpty"] = true;
+    // }
     if (serviceName === "") {
       _errors["isServiceNameEmpty"] = true;
     }
@@ -146,6 +150,9 @@ export default function Service() {
     if (serviceVersion === "") {
       _errors["isVersionEmpty"] = true;
     }
+    if (image64 === "") {
+      _errors["isIconEmpty"] = true;
+    }
     if (HWSelected.length === 0) {
       _errors["isHWEmpty"] = true;
     }
@@ -155,10 +162,11 @@ export default function Service() {
     setErrors(_errors);
 
     if (
-      accessKey === "" ||
+      // accessKey === "" ||
       serviceName === "" ||
       serviceDesc === "" ||
       serviceType === "" ||
+      image64 === "" ||
       isServiceNameUnique === false ||
       selectedOutputType === "" ||
       HWSelected.length === 0 ||
@@ -171,7 +179,7 @@ export default function Service() {
 
     console.log("HERE!");
     let data = {
-      accessKey: accessKey,
+      // accessKey: accessKey,
       serviceName: serviceName,
       description: serviceDesc,
       serviceType: serviceType,
@@ -193,167 +201,206 @@ export default function Service() {
       setErrors(_errors);
     }
   };
+  const getBase64 = (file) => {
+    return new Promise((resolve) => {
+      let fileInfo;
+      let baseURL = "";
+      // Make new FileReader
+      let reader = new FileReader();
+
+      // Convert the file to base64 text
+      reader.readAsDataURL(file);
+
+      // on reader load somthing...
+      reader.onload = () => {
+        // Make a fileInfo Object
+        baseURL = reader.result;
+        resolve(baseURL);
+      };
+      console.log(fileInfo);
+    });
+  };
+  const handleFileInputChange = (e) => {
+    clearError("isIconEmpty");
+    let _file = file;
+    _file = e.target.files[0];
+    getBase64(_file)
+      .then((result) => {
+        _file["base64"] = result;
+        console.log("File Is", _file);
+        setFile(e.target.files[0]);
+        setImage64(result);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    setFile(e.target.files[0]);
+  };
   return (
     <div className="service-wrapper">
-      <div className="cardd card-3">
-        <h1>Service</h1>
-        <div className="service__unique__wrapper">
-          <Inputbox
-            label="Access Key"
-            value={accessKey}
-            onChange={(e) => setAccessKey(e.target.value)}
-            autoFocus
-            error={errors["isAccessEmpty"]}
-            onFocus={() => clearError("isAccessEmpty")}
-          />
+      {console.log(image64)}
+      <Header text="Service Upload Form" />
+      <div className="flex">
+        <Sidenav />
+        <div className="cardd card-3">
+          {/* <h1>Service</h1> */}
+          <div className="service__unique__wrapper">
+            {/* <Inputbox
+              label="Access Key"
+              value={accessKey}
+              onChange={(e) => setAccessKey(e.target.value)}
+              autoFocus
+              error={errors["isAccessEmpty"]}
+              onFocus={() => clearError("isAccessEmpty")}
+            /> */}
 
-          <Inputbox
-            label="Service Name"
-            value={serviceName}
-            onChange={(e) => {
-              const value = e.target.value;
-              setServiceName(value.split(" ").join(""));
-            }}
-            onFocus={() => {
-              setisServiceNameUnique(true);
-              clearError("isServiceNameEmpty");
-            }}
-            error={errors["isServiceNameEmpty"]}
-          />
-          {!isServiceNameUnique && (
-            <p className="error">Service name already present</p>
-          )}
-        </div>
-        <div style={{ marginBottom: "2vw", marginTop: "2vw" }}>
-          <label>
-            Service Type
-            <select
-              className={
-                errors["isServiceTypeEmpty"]
-                  ? "service__select select__error"
-                  : "service__select"
-              }
-              onFocus={() => clearError("isServiceTypeEmpty")}
-              value={serviceType}
-              onChange={(e) => setServiceType(e.target.value)}
-            >
-              <option disabled value="">
-                Choose One
-              </option>
-              {serviceTypeOptions.map((item, index) => (
-                <option key={index + 22} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-
-        <div class="form__group">
-          <textarea
-            class="form__field"
-            placeholder="Your Message"
-            rows="6"
-            value={serviceDesc}
-            onChange={(e) => setServiceDesc(e.target.value)}
-            onFocus={() => clearError("isServiceDEmpty")}
-          ></textarea>
-          <label for="message" class="form__label2 form__label">
-            Service Description
-          </label>
-          {errors["isServiceDEmpty"] && (
-            <p className="input__error">Required</p>
-          )}
-        </div>
-        <Inputbox
-          label="Service Version"
-          value={serviceVersion}
-          onChange={(e) => setServiceVersion(e.target.value)}
-          error={errors["isVersionEmpty"]}
-          onFocus={() => clearError("isVersionEmpty")}
-        />
-        <div style={{ marginBottom: "2vw" }}>
-          <label
-            style={
-              errors["isOSEmpty"] ? { color: "red" } : { color: "inherit" }
-            }
-          >
-            Compatible OS Version
-          </label>
-          <div className="btn-wrap">
-            {osData.map((item, index) => (
-              <div
-                key={index + item.osVersion}
-                // className="os-btn"
-                className={
-                  serviceOSSelected.includes(item.osVersion)
-                    ? "os-btn active-os-btn"
-                    : "os-btn"
-                }
-                onClick={() => {
-                  handleOSClick(index);
-                  clearError("isOSEmpty");
-                }}
-              >
-                {item.osVersion}
-              </div>
-            ))}
+            <Inputbox
+              label="Service Name"
+              value={serviceName}
+              onChange={(e) => {
+                const value = e.target.value;
+                setServiceName(value.split(" ").join(""));
+              }}
+              onFocus={() => {
+                setisServiceNameUnique(true);
+                clearError("isServiceNameEmpty");
+              }}
+              error={errors["isServiceNameEmpty"]}
+            />
+            {!isServiceNameUnique && (
+              <p className="error">Service name already present</p>
+            )}
           </div>
-        </div>
-        <div style={{ marginBottom: "2vw" }}>
-          <label
-            style={
-              errors["isHWEmpty"] ? { color: "red" } : { color: "inherit" }
-            }
-          >
-            Compatible Hardware Version
+          <div style={{ marginBottom: "2vw", marginTop: "2vw" }}>
+            <label>
+              Service Type
+              <select
+                className={
+                  errors["isServiceTypeEmpty"]
+                    ? "service__select select__error"
+                    : "service__select"
+                }
+                onFocus={() => clearError("isServiceTypeEmpty")}
+                value={serviceType}
+                onChange={(e) => setServiceType(e.target.value)}
+              >
+                <option disabled value="">
+                  Choose One
+                </option>
+                {serviceTypeOptions.map((item, index) => (
+                  <option key={index + 22} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <div class="form__group">
+            <textarea
+              class="form__field"
+              placeholder="Your Message"
+              rows="6"
+              value={serviceDesc}
+              onChange={(e) => setServiceDesc(e.target.value)}
+              onFocus={() => clearError("isServiceDEmpty")}
+            ></textarea>
+            <label for="message" class="form__label2 form__label">
+              Service Description
+            </label>
+            {errors["isServiceDEmpty"] && (
+              <p className="input__error">Required</p>
+            )}
+          </div>
+          <Inputbox
+            label="Service Version"
+            value={serviceVersion}
+            onChange={(e) => setServiceVersion(e.target.value)}
+            error={errors["isVersionEmpty"]}
+            onFocus={() => clearError("isVersionEmpty")}
+          />
+          <div style={{ marginBottom: "2vw" }}>
+            <label
+              style={
+                errors["isOSEmpty"] ? { color: "red" } : { color: "inherit" }
+              }
+            >
+              Compatible OS Version
+            </label>
             <div className="btn-wrap">
-              {serviceHWSelected.map((item, index) => (
+              {osData.map((item, index) => (
                 <div
-                  key={index + item}
+                  key={index + item.osVersion}
                   // className="os-btn"
                   className={
-                    HWSelected.includes(item)
+                    serviceOSSelected.includes(item.osVersion)
                       ? "os-btn active-os-btn"
                       : "os-btn"
                   }
                   onClick={() => {
-                    handleHWClick(index);
-                    clearError("isHWEmpty");
+                    handleOSClick(index);
+                    clearError("isOSEmpty");
                   }}
                 >
-                  {item}
+                  {item.osVersion}
                 </div>
               ))}
             </div>
-          </label>
-        </div>
-
-        <div style={{ marginBottom: "2vw", marginTop: "2vw" }}>
-          <label>
-            Output Type
-            <select
-              className={
-                errors["isOutputTypeEmpty"]
-                  ? "service__select select__error"
-                  : "service__select"
+          </div>
+          <div style={{ marginBottom: "2vw" }}>
+            <label
+              style={
+                errors["isHWEmpty"] ? { color: "red" } : { color: "inherit" }
               }
-              onFocus={() => clearError("isOutputTypeEmpty")}
-              value={selectedOutputType}
-              onChange={(e) => setSelectedOutputType(e.target.value)}
             >
-              <option disabled value="">
-                Choose One
-              </option>
-              {outputTypeOption.map((item, index) => (
-                <option key={index + 22} value={item}>
-                  {item}
+              Compatible Hardware Version
+              <div className="btn-wrap">
+                {serviceHWSelected.map((item, index) => (
+                  <div
+                    key={index + item}
+                    // className="os-btn"
+                    className={
+                      HWSelected.includes(item)
+                        ? "os-btn active-os-btn"
+                        : "os-btn"
+                    }
+                    onClick={() => {
+                      handleHWClick(index);
+                      clearError("isHWEmpty");
+                    }}
+                  >
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </label>
+          </div>
+
+          <div style={{ marginBottom: "2vw", marginTop: "2vw" }}>
+            <label>
+              Output Type
+              <select
+                className={
+                  errors["isOutputTypeEmpty"]
+                    ? "service__select select__error"
+                    : "service__select"
+                }
+                onFocus={() => clearError("isOutputTypeEmpty")}
+                value={selectedOutputType}
+                onChange={(e) => setSelectedOutputType(e.target.value)}
+              >
+                <option disabled value="">
+                  Choose One
                 </option>
-              ))}
-            </select>
-          </label>
-        </div>
-        {/* {isPopOpen && (
+                {outputTypeOption.map((item, index) => (
+                  <option key={index + 22} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          {/* {isPopOpen && (
           <Popup>
             <div className="service__pop">
               <Inputbox
@@ -366,7 +413,18 @@ export default function Service() {
             </div>
           </Popup>
         )} */}
-        <Button name="Submit" onClick={postData} />
+          <Button name="Next" onClick={postData} />
+        </div>
+        <div className="image-upload card-3">
+          <h3>Upload Icon</h3>
+          <img src={image64} style={{ width: "100%", margin: "1rem 0" }} />
+          <input
+            type="file"
+            accept=".png, .jpg, .jpeg"
+            onChange={handleFileInputChange}
+          />
+          {errors["isIconEmpty"] && <p className="input__error">Required</p>}
+        </div>
       </div>
     </div>
   );

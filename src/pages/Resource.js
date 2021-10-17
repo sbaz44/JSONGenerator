@@ -3,6 +3,8 @@ import Inputbox from "../components/Inputbox";
 import Button from "../components/Button";
 import { axiosApiInstance } from "../helpers/request";
 import { useHistory } from "react-router-dom";
+import Header from "../components/Header";
+import Sidenav from "../components/Sidenav";
 
 const MountCard = (data) => {
   return (
@@ -308,99 +310,103 @@ export default function Resource() {
   return (
     <div className="service-wrapper">
       {console.log(mount)}
-      <div className="cardd card-5 card-6">
-        <h2>Mounts</h2>
-        <Button
-          onClick={addMount}
-          style={{ alignSelf: "start" }}
-          name="Add Mount"
-        />
-        <div className="resource_mount_wrapper">
-          {mount.map((item, index) => (
-            <MountCard
-              key={index + 58}
-              value={item.Source}
-              value2={item.Target}
-              label1="Source"
-              label2="Target"
-              onFocus={() => clearSrcError(index)}
-              onFocus2={() => clearTargetError(index)}
-              error={srcError[index]}
-              error2={targetError[index]}
-              ReadOnly={item.ReadOnly}
-              onSrcChange={(e) => mountHandleChange(e, index, "Source")}
-              onDestChange={(e) => mountHandleChange(e, index, "Target")}
-              onCBChange={(e) => {
-                let data = [...mount];
-                mount[index].ReadOnly = !mount[index].ReadOnly;
-                console.log(data);
-                setMount(data);
-              }}
-              isReadOnly
-            />
-          ))}
-        </div>
-        <h2>Resources</h2>
+      <Header text="Service Upload Form" />
+      <div className="flex">
+        <Sidenav />
 
-        <Inputbox
-          label="Resource Limit (in MB)"
-          value={resrcLimit}
-          onChange={(e) => {
-            if (isNaN(e.target.value)) {
-              return;
-            }
-            const onlyNums = e.target.value.replace(/[^0-9]/g, "");
-            setResrcLimit(onlyNums);
-          }}
-          onFocus={() => {
-            let data = { ...errors };
-            data.isResourceLimitEmpty = false;
-            setErrors(data);
-          }}
-          error={errors["isResourceLimitEmpty"]}
-        />
-        <Inputbox
-          label="Resource Reservation (in MB)"
-          value={resrcRes}
-          onChange={(e) => {
-            if (isNaN(e.target.value)) {
-              return;
-            }
-            const onlyNums = e.target.value.replace(/[^0-9]/g, "");
-            setResrcRes(onlyNums);
-          }}
-          onFocus={() => {
-            let data = { ...errors };
-            data.isResrcResEmpty = false;
-            setErrors(data);
-          }}
-          error={errors["isResrcResEmpty"]}
-        />
-        <h2>Ports</h2>
-        <Button
-          onClick={addPort}
-          style={{ alignSelf: "start" }}
-          name="Add Port"
-        />
-        <div className="resource_mount_wrapper">
-          {port.map((item, index) => (
-            <MountCard
-              key={index + 595}
-              value={item.PublishedPort}
-              value2={item.TargetPort}
-              label1="Published Port"
-              label2="Target Port"
-              // onFocus={() => clearPPortError(index)}
-              onFocus2={() => clearTPortError(index)}
-              // error={pPortError[index]}
-              error2={tPortError[index]}
-              onSrcChange={(e) => portHandleChange(e, index, "PublishedPort")}
-              onDestChange={(e) => portHandleChange(e, index, "TargetPort")}
-            />
-          ))}
-        </div>
+        <div className="cardd card-5 card-6">
+          <h2>Mounts</h2>
+          <Button
+            onClick={addMount}
+            style={{ alignSelf: "start" }}
+            name="Add Mount"
+          />
+          <div className="resource_mount_wrapper">
+            {mount.map((item, index) => (
+              <MountCard
+                key={index + 58}
+                value={item.Source}
+                value2={item.Target}
+                label1="Source"
+                label2="Target"
+                onFocus={() => clearSrcError(index)}
+                onFocus2={() => clearTargetError(index)}
+                error={srcError[index]}
+                error2={targetError[index]}
+                ReadOnly={item.ReadOnly}
+                onSrcChange={(e) => mountHandleChange(e, index, "Source")}
+                onDestChange={(e) => mountHandleChange(e, index, "Target")}
+                onCBChange={(e) => {
+                  let data = [...mount];
+                  mount[index].ReadOnly = !mount[index].ReadOnly;
+                  console.log(data);
+                  setMount(data);
+                }}
+                isReadOnly
+              />
+            ))}
+          </div>
+          <h2>Resources</h2>
 
-        {/* <Inputbox
+          <Inputbox
+            label="Resource Limit (in MB)"
+            value={resrcLimit}
+            onChange={(e) => {
+              if (isNaN(e.target.value)) {
+                return;
+              }
+              const onlyNums = e.target.value.replace(/[^0-9]/g, "");
+              setResrcLimit(onlyNums);
+            }}
+            onFocus={() => {
+              let data = { ...errors };
+              data.isResourceLimitEmpty = false;
+              setErrors(data);
+            }}
+            error={errors["isResourceLimitEmpty"]}
+          />
+          <Inputbox
+            label="Resource Reservation (in MB)"
+            value={resrcRes}
+            onChange={(e) => {
+              if (isNaN(e.target.value)) {
+                return;
+              }
+              const onlyNums = e.target.value.replace(/[^0-9]/g, "");
+              setResrcRes(onlyNums);
+            }}
+            onFocus={() => {
+              let data = { ...errors };
+              data.isResrcResEmpty = false;
+              setErrors(data);
+            }}
+            error={errors["isResrcResEmpty"]}
+          />
+          <h2>Ports</h2>
+          <Button
+            onClick={addPort}
+            style={{ alignSelf: "start" }}
+            name="Add Port"
+          />
+          <div className="resource_mount_wrapper">
+            {port.map((item, index) => (
+              <MountCard
+                key={index + 595}
+                value={item.PublishedPort}
+                value2={item.TargetPort}
+                label1="Published Port"
+                label2="Target Port"
+                // onFocus={() => clearPPortError(index)}
+                onFocus2={() => clearTPortError(index)}
+                // error={pPortError[index]}
+                error2={tPortError[index]}
+                onSrcChange={(e) => portHandleChange(e, index, "PublishedPort")}
+                onDestChange={(e) => portHandleChange(e, index, "TargetPort")}
+              />
+            ))}
+          </div>
+
+          {/* <Inputbox
           label="Published Port"
           // value={serviceName}
           // onChange={(e) => {
@@ -416,35 +422,36 @@ export default function Resource() {
           // }}
           // onFocus={() => setisServiceNameUnique(true)}
         /> */}
-        <h2>Database</h2>
-        <Inputbox
-          label="Database Name"
-          value={DBName}
-          onChange={(e) => {
-            setDBName(e.target.value);
-          }}
-          onFocus={() => {
-            let data = { ...errors };
-            data.isDBNameEmpty = false;
-            setErrors(data);
-          }}
-          error={errors["isDBNameEmpty"]}
-        />
-        <Inputbox
-          label="Database Type"
-          value={DBType}
+          <h2>Database</h2>
+          <Inputbox
+            label="Database Name"
+            value={DBName}
+            onChange={(e) => {
+              setDBName(e.target.value);
+            }}
+            onFocus={() => {
+              let data = { ...errors };
+              data.isDBNameEmpty = false;
+              setErrors(data);
+            }}
+            error={errors["isDBNameEmpty"]}
+          />
+          <Inputbox
+            label="Database Type"
+            value={DBType}
 
-          // value={serviceName}
-          // onChange={(e) => {
-          //   setServiceName(e.target.value);
-          // }}
-          // onFocus={() => setisServiceNameUnique(true)}
-        />
-        <Button
-          onClick={onSubmit}
-          style={{ alignSelf: "center" }}
-          name="Submit"
-        />
+            // value={serviceName}
+            // onChange={(e) => {
+            //   setServiceName(e.target.value);
+            // }}
+            // onFocus={() => setisServiceNameUnique(true)}
+          />
+          <Button
+            onClick={onSubmit}
+            style={{ alignSelf: "center" }}
+            name="Submit"
+          />
+        </div>
       </div>
     </div>
   );
