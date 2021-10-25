@@ -306,7 +306,7 @@ export default function Usecase() {
   const addtype = (i) => {
     let _elementList = [...elementsList];
     let obj = {
-      elementName: "element" + (_elementList[i].elements.length + 1),
+      elementName: "element" + (_elementList[i].elements.length + 1) + i,
       type: "text",
       label: "Key name",
       required: false,
@@ -361,7 +361,7 @@ export default function Usecase() {
   const getFormElement = (elementName, elementSchema) => {
     console.log({ elementName, elementSchema });
     const props = {
-      name: elementName.elementName,
+      name: elementName,
       label: elementSchema.label,
       options: elementSchema.options,
       isNumber: elementSchema.isNumber,
@@ -403,11 +403,11 @@ export default function Usecase() {
           _validationSchema[item.elementName] = Yup.string().email();
         } else if (item.type === "select") {
           _validationSchema[item.elementName] = Yup.string().oneOf(
-            item.options.labels.map((o) => o)
+            item.options.map((o) => o)
           );
         } else if (item.type === "radio") {
           _validationSchema[item.elementName] = Yup.string().oneOf(
-            item.options.labels.map((o) => o)
+            item.options.map((o) => o)
           );
         } else if (item.type === "checkbox") {
           _validationSchema[item.elementName] = Yup.array()
@@ -430,6 +430,10 @@ export default function Usecase() {
     initForm(elementsList);
   }, [elementsList]);
 
+  const onSubmit = (values, { setSubmitting, resetForm, setStatus }) => {
+    console.log(values);
+    // setSubmitting(false);
+  };
   return (
     <div className="service-wrapper">
       {console.log(elementsList)}
@@ -437,13 +441,24 @@ export default function Usecase() {
       <div className="flex">
         <Sidenav />
         <div className="service-preview">
-          {elementsList.map((item, index) =>
-            item.elements.map((ele_item, ele_index) => (
-              <div key={ele_item.elementName}>
-                {getFormElement(ele_item.elementName, ele_item)}
+          <Form
+            enableReinitialize
+            initialValues={formData}
+            validationSchema={validationSchema}
+            onSubmit={onSubmit}
+          >
+            {elementsList.map((item, index) => (
+              <div>
+                {item.subType}
+                {item.elements.map((ele_item, ele_index) => (
+                  <div key={ele_item.elementName}>
+                    {getFormElement(ele_item.elementName, ele_item)}
+                  </div>
+                ))}
               </div>
-            ))
-          )}
+            ))}
+            <SubmitButton title="Submit" />
+          </Form>
         </div>
         <div className="service-subType">
           <div

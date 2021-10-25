@@ -10,7 +10,7 @@ import {
 export function Form(props) {
   return (
     <Formik {...props}>
-      <FormikForm className="needs-validation" novalidate="">
+      <FormikForm className="needs-validation" noValidate="">
         {props.children}
       </FormikForm>
     </Formik>
@@ -52,6 +52,8 @@ export function TextField(props) {
 
 export function SelectField(props) {
   const { name, label, options } = props;
+  console.log(name, label, options);
+  // return <div>ABC</div>;
   return (
     <>
       {label && <label for={name}>{label}</label>}

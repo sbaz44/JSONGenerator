@@ -296,16 +296,16 @@ export default function Service() {
             </label>
           </div>
 
-          <div class="form__group">
+          <div className="form__group">
             <textarea
-              class="form__field"
+              className="form__field"
               placeholder="Your Message"
               rows="6"
               value={serviceDesc}
               onChange={(e) => setServiceDesc(e.target.value)}
               onFocus={() => clearError("isServiceDEmpty")}
             ></textarea>
-            <label for="message" class="form__label2 form__label">
+            <label for="message" className="form__label2 form__label">
               Service Description
             </label>
             {errors["isServiceDEmpty"] && (
