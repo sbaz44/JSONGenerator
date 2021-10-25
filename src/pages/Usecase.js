@@ -1,8 +1,21 @@
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Button from "../components/Button";
 import App2 from "../App2";
 import { axiosApiInstance } from "../helpers/request";
 import { useHistory } from "react-router";
+import Header from "../components/Header";
+import Sidenav from "../components/Sidenav";
+import Inputbox from "../components/Inputbox";
+import Arrow from "../arrow.png";
+import {
+  Form,
+  TextField,
+  SelectField,
+  SubmitButton,
+  RadioField,
+  CheckboxField,
+} from "../FormElement";
+import * as Yup from "yup";
 const InputBox = (data) => {
   return (
     <div className="input-container">
@@ -49,25 +62,6 @@ const Dropbox = (data) => {
   };
   return (
     <div className="drop-container">
-      <label>Dropdown label</label>
-      <input
-        type="text"
-        value={data.labelValue}
-        onChange={data.onChange}
-        onFocus={data.onFocus}
-      />
-      <input type="button" value="remove" onClick={data.removeInput} />
-      <br />
-      <label>
-        Required?
-        <input
-          type="checkbox"
-          value={data.required}
-          defaultChecked={data.required}
-          onChange={data.checkBoxHandle}
-        />
-      </label>
-      <br />
       <label> No of options:</label>
       <select
         // value={this.state.value}
@@ -102,25 +96,7 @@ const Radiobox = (data) => {
   };
   return (
     <div className="drop-container">
-      <label>Radio label</label>
-      <input
-        type="text"
-        value={data.labelValue}
-        onChange={data.onChange}
-        onFocus={data.onFocus}
-      />
-      <input type="button" value="remove" onClick={data.removeInput} />
-      <br />
-      <label>
-        Required?
-        <input
-          type="checkbox"
-          value={data.required}
-          defaultChecked={data.required}
-          onChange={data.checkBoxHandle}
-        />
-      </label>
-      <br />
+      {/* <input type="button" value="remove" onClick={data.removeInput} /> */}
 
       <label> No of options:</label>
       <select
@@ -156,25 +132,8 @@ const Checkbox = (data) => {
   };
   return (
     <div className="drop-container">
-      <label>Checkbox label</label>
-      <input
-        type="text"
-        value={data.labelValue}
-        onChange={data.onChange}
-        onFocus={data.onFocus}
-      />
-      <input type="button" value="remove" onClick={data.removeInput} />
-      <br />
-      <label>
-        Required?
-        <input
-          type="checkbox"
-          value={data.required}
-          defaultChecked={data.required}
-          onChange={data.checkBoxHandle}
-        />
-      </label>
-      <br />
+      {/* <input type="button" value="remove" onClick={data.removeInput} /> */}
+
       <label> No of options:</label>
       <select
         // value={this.state.value}
@@ -203,11 +162,17 @@ const Checkbox = (data) => {
   );
 };
 
+const SubType = (data) => {
+  return <div className="sub-child">{data.children}</div>;
+};
+
 export default function Usecase() {
   let history = useHistory();
 
   const [elementsList, setElementList] = useState([]);
   const [isAdded, setIsAdded] = useState(false);
+  const [formData, setFormData] = useState({});
+  const [validationSchema, setValidationSchema] = useState({});
 
   const inputClick = () => {
     const data = [...elementsList];
@@ -273,18 +238,9 @@ export default function Usecase() {
   };
 
   const handleChange = (event, index) => {
-    const data = [...elementsList];
-    data[index].label = event.target.value;
-    setElementList(data);
-  };
-
-  const selectChange = (event, index) => {
-    const data = [...elementsList];
-    data[index].options.labels = [];
-    for (let i = 0; i < event.target.value; i++) {
-      data[index].options.labels.push("");
-    }
-    setElementList(data);
+    let _elementList = [...elementsList];
+    _elementList[index].subType = event.target.value;
+    setElementList(_elementList);
   };
 
   const checkBoxHandle = (i) => {
@@ -294,18 +250,6 @@ export default function Usecase() {
     setElementList(data);
   };
 
-  const checkNumberHandle = (i) => {
-    const data = [...elementsList];
-    let required = data[i].options.isNumber;
-    data[i].options.isNumber = !required;
-    setElementList(data);
-  };
-
-  const optionChange = (e, i, index) => {
-    const data = [...elementsList];
-    data[index].options.labels[i] = e.target.value;
-    setElementList(data);
-  };
   const removeInput = (i) => {
     const data = [...elementsList];
     data.splice(i, 1);
@@ -344,17 +288,315 @@ export default function Usecase() {
     console.log(res);
     history.push("/analytics");
   };
+
+  // ----XXX----
+
+  const addSubtype = () => {
+    let _elementList = [...elementsList];
+    let obj = {
+      subType: "",
+      isOpen: true,
+      elements: [],
+    };
+
+    _elementList.push(obj);
+    setElementList(_elementList);
+  };
+
+  const addtype = (i) => {
+    let _elementList = [...elementsList];
+    let obj = {
+      elementName: "element" + (_elementList[i].elements.length + 1),
+      type: "text",
+      label: "Key name",
+      required: false,
+      isNumber: false,
+      options: [],
+    };
+    _elementList[i].elements.push(obj);
+    setElementList(_elementList);
+  };
+
+  const handleTypeDD = (e, item_i, ele_i) => {
+    let _elementList = [...elementsList];
+    _elementList[item_i].elements[ele_i].type = e.target.value;
+    setElementList(_elementList);
+  };
+
+  const handleRequired = (item_i, ele_i) => {
+    let _elementList = [...elementsList];
+    let required = _elementList[item_i].elements[ele_i].required;
+    _elementList[item_i].elements[ele_i].required = !required;
+    setElementList(_elementList);
+  };
+
+  const handleIsNumber = (item_i, ele_i) => {
+    let _elementList = [...elementsList];
+    let isNumber = _elementList[item_i].elements[ele_i].isNumber;
+    _elementList[item_i].elements[ele_i].isNumber = !isNumber;
+    setElementList(_elementList);
+  };
+
+  const handleKeyChange = (e, item_i, ele_i) => {
+    let _elementList = [...elementsList];
+    _elementList[item_i].elements[ele_i].label = e.target.value;
+    setElementList(_elementList);
+  };
+
+  const selectChange = (event, index, ele_i) => {
+    const _elementList = [...elementsList];
+    _elementList[index].elements[ele_i].options = [];
+    for (let i = 0; i < event.target.value; i++) {
+      _elementList[index].elements[ele_i].options.push("");
+    }
+    setElementList(_elementList);
+  };
+
+  const optionChange = (e, option_i, index, ele_i) => {
+    const _elementList = [...elementsList];
+    _elementList[index].elements[ele_i].options[option_i] = e.target.value;
+    setElementList(_elementList);
+  };
+
+  const getFormElement = (elementName, elementSchema) => {
+    console.log({ elementName, elementSchema });
+    const props = {
+      name: elementName.elementName,
+      label: elementSchema.label,
+      options: elementSchema.options,
+      isNumber: elementSchema.isNumber,
+    };
+
+    if (elementSchema.type === "text" || elementSchema.type === "email") {
+      return <TextField {...props} />;
+    }
+
+    if (elementSchema.type === "select") {
+      return <SelectField {...props} />;
+    }
+
+    if (elementSchema.type === "radio") {
+      return <RadioField {...props} />;
+    }
+
+    if (elementSchema.type === "checkbox") {
+      return <CheckboxField {...props} />;
+    }
+  };
+
+  const initForm = (formSchema) => {
+    let __formData = {};
+    let _validationSchema = {};
+
+    for (var elementItem of elementsList) {
+      console.log(elementItem);
+      for (let item of elementItem.elements) {
+        console.log(item);
+        __formData[item.elementName] = "";
+        if (item.type === "text") {
+          if (item.isNumber) {
+            _validationSchema[item.elementName] = Yup.number();
+          } else {
+            _validationSchema[item.elementName] = Yup.string();
+          }
+        } else if (item.type === "email") {
+          _validationSchema[item.elementName] = Yup.string().email();
+        } else if (item.type === "select") {
+          _validationSchema[item.elementName] = Yup.string().oneOf(
+            item.options.labels.map((o) => o)
+          );
+        } else if (item.type === "radio") {
+          _validationSchema[item.elementName] = Yup.string().oneOf(
+            item.options.labels.map((o) => o)
+          );
+        } else if (item.type === "checkbox") {
+          _validationSchema[item.elementName] = Yup.array()
+            .required()
+            .min(1, "Please select atleast one option");
+        }
+        if (item.required) {
+          _validationSchema[item.elementName] =
+            _validationSchema[item.elementName].required("Required");
+        }
+      }
+    }
+    console.log({ __formData, _validationSchema });
+
+    setFormData(__formData);
+    setValidationSchema(Yup.object().shape({ ..._validationSchema }));
+  };
+
+  useEffect(() => {
+    initForm(elementsList);
+  }, [elementsList]);
+
   return (
-    <div className="App">
+    <div className="service-wrapper">
       {console.log(elementsList)}
-      <h1>Select Element</h1>
+      <Header />
+      <div className="flex">
+        <Sidenav />
+        <div className="service-preview">
+          {elementsList.map((item, index) =>
+            item.elements.map((ele_item, ele_index) => (
+              <div key={ele_item.elementName}>
+                {getFormElement(ele_item.elementName, ele_item)}
+              </div>
+            ))
+          )}
+        </div>
+        <div className="service-subType">
+          <div
+            className="flex"
+            style={{
+              justifyContent: "space-between",
+              alignItems: "center",
+              margin: "10px 0",
+            }}
+          >
+            <h4>Service Subtype</h4>
+            <div className="btn-blue" onClick={addSubtype}>
+              +
+            </div>
+          </div>
+          <div className="subType-Container">
+            {elementsList.map((item, index) => (
+              <SubType
+                key={index + 12}
+                onaddType={() => addtype(index)}
+                handleChange={(e) => handleChange(e, index)}
+              >
+                <div
+                  className="flex"
+                  style={{
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Inputbox
+                    label="Name"
+                    onChange={(e) => handleChange(e, index)}
+                    value={elementsList[index].subType}
+                    // onFocus={() => {
+                    //   let data = { ...errors };
+                    //   data.isResrcResEmpty = false;
+                    //   setErrors(data);
+                    // }}
+                    // error={errors["isResrcResEmpty"]}
+                  />
+                  <img src={Arrow} className="arrow" />
+                </div>
+                {item.elements.length > 0 &&
+                  item.elements.map((elements_item, elements_i) => (
+                    <React.Fragment>
+                      <div className="elements-primary">
+                        <label>
+                          Required?
+                          <input
+                            type="checkbox"
+                            value={elements_item.required}
+                            defaultChecked={elements_item.required}
+                            onChange={() => handleRequired(index, elements_i)}
+                          />
+                        </label>
+                        <select
+                          value={elements_item.type}
+                          onChange={(e) => handleTypeDD(e, index, elements_i)}
+                        >
+                          <option value="text">text</option>
+                          <option value="select">dropdown</option>
+                          <option value="radio">radio</option>
+                          <option value="checkbox">checkbox</option>
+                        </select>
+                        <input
+                          type="text"
+                          className="ele_key"
+                          placeholder="Key Name"
+                          value={elements_item.label}
+                          onFocus={(event) => event.target.select()}
+                          onChange={(e) =>
+                            handleKeyChange(e, index, elements_i)
+                          }
+                        />
+                      </div>
+                      <div className="element-dynamic">
+                        {elements_item.type === "text" && (
+                          <label>
+                            Only Number?
+                            <input
+                              type="checkbox"
+                              value={elements_item.isNumber}
+                              defaultChecked={elements_item.isNumber}
+                              onChange={() => handleIsNumber(index, elements_i)}
+                            />
+                          </label>
+                        )}
+                        {elements_item.type === "select" && (
+                          <Dropbox
+                            key={index + 98}
+                            options={elements_item.options}
+                            onFocus={(event) => event.target.select()}
+                            // onChange={(e) => handleChange(e, index)}
+                            selectChange={(e) =>
+                              selectChange(e, index, elements_i)
+                            }
+                            optionHandlee={(e, option_i) => {
+                              optionChange(e, option_i, index, elements_i);
+                            }}
+                            removeInput={() => removeInput(index)}
+                          />
+                        )}
+
+                        {elements_item.type === "radio" && (
+                          <Radiobox
+                            key={index + 36}
+                            options={elements_item.options}
+                            onChange={(e) => handleChange(e, index)}
+                            selectChange={(e) =>
+                              selectChange(e, index, elements_i)
+                            }
+                            onFocus={(event) => event.target.select()}
+                            optionHandlee={(e, option_i) => {
+                              optionChange(e, option_i, index, elements_i);
+                            }}
+                            removeInput={() => removeInput(index)}
+                          />
+                        )}
+
+                        {elements_item.type === "checkbox" && (
+                          <Checkbox
+                            key={index + 48}
+                            options={elements_item.options}
+                            onFocus={(event) => event.target.select()}
+                            selectChange={(e) =>
+                              selectChange(e, index, elements_i)
+                            }
+                            optionHandlee={(e, option_i) => {
+                              optionChange(e, option_i, index, elements_i);
+                            }}
+                            removeInput={() => removeInput(index)}
+                          />
+                        )}
+                      </div>
+                    </React.Fragment>
+                  ))}
+                <div className="btn-container2">
+                  <div className="btn-blue2" onClick={() => addtype(index)}>
+                    +
+                  </div>
+                </div>
+              </SubType>
+            ))}
+          </div>
+        </div>
+      </div>
       <div className="btn-container">
         <button onClick={inputClick}>Add Inputbox</button>
         <button onClick={dropClick}>Add Dropdown</button>
         <button onClick={radioClick}>Add Radio Button</button>
         <button onClick={checkboxClick}>Add Checkbox</button>
       </div>
-      <div className="container">
+      {/* <div className="container">
         {elementsList.map((item, index) => {
           if (item.type === "text") {
             return (
@@ -427,7 +669,7 @@ export default function Usecase() {
             );
           } else return null;
         })}
-      </div>
+      </div> */}
       {/* {elementsList.length > 0 && (
         <button onClick={downloadJSON}>Download JSON</button>
       )} */}
@@ -435,7 +677,7 @@ export default function Usecase() {
       {/* <pre>{JSON.stringify(elementsList, null, 4)}</pre>
       {isAdded && <App2 data={elementsList} />} */}
 
-      <Button name="Submit" onClick={postData} />
+      {/* <Button name="Submit" onClick={postData} /> */}
     </div>
   );
 }

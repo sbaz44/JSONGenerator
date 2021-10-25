@@ -74,6 +74,14 @@ const groupData = {
 };
 
 const options = {
+  onClick: (e, element) => {
+    console.log({ e, element });
+    if (element.length > 0) {
+      var ind = element[0].index;
+
+      // alert(ind);
+    }
+  },
   scales: {
     yAxes: [
       {
@@ -86,21 +94,41 @@ const options = {
   animation: { duration: 0 },
 };
 
-export const VerticalBar = (props) => (
-  <div style={{ width: "40vw" }}>
-    <div className="header">
-      <h1 className="title">
-        {props.title && props.title !== "Key name"
-          ? props.title
-          : "Vertical Bar Chart"}
-      </h1>
+export const VerticalBar = (props) => {
+  const verticalBarOoptions = {
+    onClick: (e, element) => {
+      if (element.length > 0) {
+        // var ind = element[0].index;
+        props.onClick(e, element, data.labels[element[0].index]);
+      }
+    },
+    scales: {
+      yAxes: [
+        {
+          ticks: {
+            beginAtZero: true,
+          },
+        },
+      ],
+    },
+    animation: { duration: 0 },
+  };
+  return (
+    <div style={{ width: "40vw" }}>
+      <div className="header">
+        <h1 className="title">
+          {props.title && props.title !== "Key name"
+            ? props.title
+            : "Vertical Bar Chart"}
+        </h1>
+      </div>
+      <Bar data={data} options={verticalBarOoptions} />
+      <h4 className="title" style={{ margin: 0 }}>
+        Data Schema
+      </h4>
     </div>
-    <Bar data={data} options={options} />
-    <h4 className="title" style={{ margin: 0 }}>
-      Data Schema
-    </h4>
-  </div>
-);
+  );
+};
 
 export const PieChart = (props) => (
   <div style={{ width: "40vw" }}>

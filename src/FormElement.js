@@ -36,11 +36,6 @@ export function TextField(props) {
             }
             const onlyNums = e.target.value.replace(/[^0-9]/g, "");
             formikProps.setFieldValue(name, onlyNums);
-            // const { value } = e.target;
-            // const regex = /^(0*[1-9][0-9]*(\.[0-9]*)?|0*\.[0-9]*[1-9][0-9]*)$/;
-            // if (regex.test(value.toString())) {
-            //   formikProps.setFieldValue(name, value);
-            // }
           } else {
             formikProps.setFieldValue(name, e.target.value);
           }

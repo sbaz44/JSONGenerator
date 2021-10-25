@@ -8,6 +8,7 @@ import Service from "./pages/Service";
 import Dependencies from "./pages/Dependencies";
 import Graphs from "./Graphs";
 import Usecase from "./pages/Usecase";
+import Usecase2 from "./pages/Usecase2";
 
 export default function Routes() {
   return (
@@ -22,6 +23,7 @@ export default function Routes() {
         <Route exact path="/dependencies" component={Dependencies} />
         <Route exact path="/graphs" component={Graphs} />
         <Route exact path="/usecase" component={Usecase} />
+        <Route exact path="/usecase2" component={Usecase2} />
       </Switch>
     </Router>
   );

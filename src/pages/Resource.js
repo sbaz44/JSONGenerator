@@ -62,6 +62,8 @@ export default function Resource() {
 
   const [port, setPort] = useState([]);
 
+  const [env, setEnv] = useState([]);
+
   const addMount = () => {
     let _mount = [...mount];
     setSrcError([...srcError, false]);
@@ -73,6 +75,14 @@ export default function Resource() {
     };
     _mount.push(obj);
     setMount(_mount);
+  };
+
+  const addEnv = () => {
+    let _env = [...env];
+    // setSrcError([...srcError, false]);
+    // setTargetError([...targetError, false]);
+    _env.push("");
+    setEnv(_env);
   };
 
   const addPort = () => {
@@ -247,6 +257,7 @@ export default function Resource() {
         serviceId: localStorage.getItem("serviceID"),
         mounts: mount,
         ports: port,
+        env: env,
         database: {
           databaseName: DBName,
           databaseType: DBType,
@@ -309,13 +320,10 @@ export default function Resource() {
   };
   return (
     <div className="service-wrapper">
-      {console.log(mount)}
-      <Header text="Service Upload Form" />
+      <Header text="Mounts Form" />
       <div className="flex">
         <Sidenav />
-
         <div className="cardd card-5 card-6">
-          <h2>Mounts</h2>
           <Button
             onClick={addMount}
             style={{ alignSelf: "start" }}
@@ -446,6 +454,27 @@ export default function Resource() {
             // }}
             // onFocus={() => setisServiceNameUnique(true)}
           />
+          <h2>Environment Variable</h2>
+          <Button
+            onClick={addEnv}
+            style={{ alignSelf: "start" }}
+            name="Add Env"
+          />
+          <div style={{ display: "flex", flexWrap: "wrap" }}>
+            {env.map((item, index) => (
+              <div style={{ margin: "0 1vw" }}>
+                <Inputbox
+                  label="Variable name"
+                  value={item}
+                  onChange={(e) => {
+                    let _env = [...env];
+                    _env[index] = e.target.value;
+                    setEnv(_env);
+                  }}
+                />
+              </div>
+            ))}
+          </div>
           <Button
             onClick={onSubmit}
             style={{ alignSelf: "center" }}
