@@ -454,42 +454,47 @@ export default function Usecase() {
             validationSchema={validationSchema}
             onSubmit={onSubmit}
           >
-            <div className="subTContainer">
-              <div className="sub-item-container">
-                {elementsList.map((item, index) => (
-                  <p
-                    className="sub-item"
-                    style={{
-                      backgroundColor:
-                        item.subType === activeTab && "rgb(95, 243, 248)",
-                      color: item.subType === activeTab && "#fff",
-                      border:
-                        item.subType === activeTab &&
-                        "2px solid rgb(95, 243, 248)",
-                    }}
-                    key={item.subType}
-                    onClick={() => setActiveTab(item.subType)}
-                  >
-                    {item.subType}
-                  </p>
-                ))}
+            {elementsList.length > 0 && (
+              <div className="subTContainer">
+                <div className="sub-item-container">
+                  {elementsList.map((item, index) => (
+                    <p
+                      className="sub-item"
+                      style={{
+                        backgroundColor:
+                          item.subType === activeTab && "rgb(95, 243, 248)",
+                        color: item.subType === activeTab && "#fff",
+                        border:
+                          item.subType === activeTab &&
+                          "2px solid rgb(95, 243, 248)",
+                      }}
+                      key={item.subType}
+                      onClick={() => setActiveTab(item.subType)}
+                    >
+                      {item.subType}
+                    </p>
+                  ))}
+                </div>
+                <div className="active-sub-item-container">
+                  {elementsList.map((item, index) => {
+                    if (item.subType === activeTab) {
+                      return (
+                        <div className="element-preview">
+                          {item.elements.map((ele_item, ele_index) => (
+                            <div
+                              className="sub-input"
+                              key={ele_item.elementName}
+                            >
+                              {getFormElement(ele_item.elementName, ele_item)}
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    }
+                  })}
+                </div>
               </div>
-              <div className="active-sub-item-container">
-                {elementsList.map((item, index) => {
-                  if (item.subType === activeTab) {
-                    return (
-                      <div className="element-preview">
-                        {item.elements.map((ele_item, ele_index) => (
-                          <div className="sub-input" key={ele_item.elementName}>
-                            {getFormElement(ele_item.elementName, ele_item)}
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  }
-                })}
-              </div>
-            </div>
+            )}
 
             <SubmitButton title="Submit" />
           </Form>
@@ -640,12 +645,12 @@ export default function Usecase() {
           </div>
         </div>
       </div>
-      <div className="btn-container">
+      {/* <div className="btn-container">
         <button onClick={inputClick}>Add Inputbox</button>
         <button onClick={dropClick}>Add Dropdown</button>
         <button onClick={radioClick}>Add Radio Button</button>
         <button onClick={checkboxClick}>Add Checkbox</button>
-      </div>
+      </div> */}
       {/* <div className="container">
         {elementsList.map((item, index) => {
           if (item.type === "text") {
