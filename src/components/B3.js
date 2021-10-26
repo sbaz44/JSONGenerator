@@ -388,41 +388,37 @@ export default function Usecase() {
   const initForm = () => {
     let __formData = {};
     let _validationSchema = {};
-    if (activeTab === "") {
-      return;
-    }
+
     for (var elementItem of elementsList) {
       console.log(elementItem);
-      if (elementItem.subtime) {
-        for (let item of elementItem.elements) {
-          console.log(item);
-          __formData[item.elementName] = "";
-          __formData[item.label] = "";
-          if (item.type === "text") {
-            if (item.isNumber) {
-              _validationSchema[item.elementName] = Yup.number();
-            } else {
-              _validationSchema[item.elementName] = Yup.string();
-            }
-          } else if (item.type === "email") {
-            _validationSchema[item.elementName] = Yup.string().email();
-          } else if (item.type === "select") {
-            _validationSchema[item.elementName] = Yup.string().oneOf(
-              item.options.map((o) => o)
-            );
-          } else if (item.type === "radio") {
-            _validationSchema[item.elementName] = Yup.string().oneOf(
-              item.options.map((o) => o)
-            );
-          } else if (item.type === "checkbox") {
-            _validationSchema[item.elementName] = Yup.array()
-              .required()
-              .min(1, "Please select atleast one option");
+      for (let item of elementItem.elements) {
+        console.log(item);
+        __formData[item.elementName] = "";
+        __formData[item.label] = "";
+        if (item.type === "text") {
+          if (item.isNumber) {
+            _validationSchema[item.elementName] = Yup.number();
+          } else {
+            _validationSchema[item.elementName] = Yup.string();
           }
-          if (item.required) {
-            _validationSchema[item.elementName] =
-              _validationSchema[item.elementName].required("Required");
-          }
+        } else if (item.type === "email") {
+          _validationSchema[item.elementName] = Yup.string().email();
+        } else if (item.type === "select") {
+          _validationSchema[item.elementName] = Yup.string().oneOf(
+            item.options.map((o) => o)
+          );
+        } else if (item.type === "radio") {
+          _validationSchema[item.elementName] = Yup.string().oneOf(
+            item.options.map((o) => o)
+          );
+        } else if (item.type === "checkbox") {
+          _validationSchema[item.elementName] = Yup.array()
+            .required()
+            .min(1, "Please select atleast one option");
+        }
+        if (item.required) {
+          _validationSchema[item.elementName] =
+            _validationSchema[item.elementName].required("Required");
         }
       }
     }
@@ -434,10 +430,9 @@ export default function Usecase() {
 
   useEffect(() => {
     initForm(elementsList);
-  }, [elementsList, activeTab]);
+  }, [elementsList]);
 
   const onSubmit = (values, { setSubmitting, resetForm, setStatus }) => {
-    console.log("SUBMIT!!");
     console.log(values);
     // setSubmitting(false);
   };
@@ -459,14 +454,6 @@ export default function Usecase() {
                 {elementsList.map((item, index) => (
                   <p
                     className="sub-item"
-                    style={{
-                      backgroundColor:
-                        item.subType === activeTab && "rgb(95, 243, 248)",
-                      color: item.subType === activeTab && "#fff",
-                      border:
-                        item.subType === activeTab &&
-                        "2px solid rgb(95, 243, 248)",
-                    }}
                     key={item.subType}
                     onClick={() => setActiveTab(item.subType)}
                   >
@@ -474,23 +461,17 @@ export default function Usecase() {
                   </p>
                 ))}
               </div>
-              <div className="active-sub-item-container">
-                {elementsList.map((item, index) => {
-                  if (item.subType === activeTab) {
-                    return (
-                      <div className="element-preview">
-                        {item.elements.map((ele_item, ele_index) => (
-                          <div className="sub-input" key={ele_item.elementName}>
-                            {getFormElement(ele_item.elementName, ele_item)}
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  }
-                })}
-              </div>
             </div>
-
+            {/* {elementsList.map((item, index) => (
+              <div className="element-preview">
+                <p>{item.subType}</p>
+                {item.elements.map((ele_item, ele_index) => (
+                  <div key={ele_item.elementName}>
+                    {getFormElement(ele_item.elementName, ele_item)}
+                  </div>
+                ))}
+              </div>
+            ))} */}
             <SubmitButton title="Submit" />
           </Form>
         </div>
