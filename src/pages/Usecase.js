@@ -434,7 +434,7 @@ export default function Usecase() {
 
   useEffect(() => {
     initForm(elementsList);
-  }, [elementsList, activeTab]);
+  }, [elementsList]);
 
   const onSubmit = (values, { setSubmitting, resetForm, setStatus }) => {
     console.log("SUBMIT!!");
@@ -644,6 +644,7 @@ export default function Usecase() {
             ))}
           </div>
         </div>
+        {/* <pre>{JSON.stringify(elementsList, null, 4)}</pre> */}
       </div>
       {/* <div className="btn-container">
         <button onClick={inputClick}>Add Inputbox</button>
@@ -729,8 +730,8 @@ export default function Usecase() {
         <button onClick={downloadJSON}>Download JSON</button>
       )} */}
 
-      {/* <pre>{JSON.stringify(elementsList, null, 4)}</pre>
-      {isAdded && <App2 data={elementsList} />} */}
+      <pre>{JSON.stringify(elementsList, null, 4)}</pre>
+      {/* {isAdded && <App2 data={elementsList} />} */}
 
       {/* <Button name="Submit" onClick={postData} /> */}
     </div>

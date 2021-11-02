@@ -18,6 +18,7 @@ export function Form(props) {
 }
 
 export function TextField(props) {
+  console.log(props);
   const formikProps = useFormikContext();
   const { name, label, placeholder, isNumber, ...rest } = props;
   return (

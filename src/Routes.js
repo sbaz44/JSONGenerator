@@ -9,6 +9,7 @@ import Dependencies from "./pages/Dependencies";
 import Graphs from "./Graphs";
 import Usecase from "./pages/Usecase";
 import Usecase2 from "./pages/Usecase2";
+import DynamicForm from "./pages/DynamicForm";
 
 export default function Routes() {
   return (
@@ -24,6 +25,7 @@ export default function Routes() {
         <Route exact path="/graphs" component={Graphs} />
         <Route exact path="/usecase" component={Usecase} />
         <Route exact path="/usecase2" component={Usecase2} />
+        <Route exact path="/dynamic" component={DynamicForm} />
       </Switch>
     </Router>
   );
