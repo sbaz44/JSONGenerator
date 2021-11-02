@@ -5,7 +5,7 @@ import {
   SelectField,
   TextField,
 } from "../components/FormElement2";
-import "./dynamic.scss";
+
 export default function DynamicForm() {
   const [data, setData] = useState([
     {
@@ -63,10 +63,10 @@ export default function DynamicForm() {
   ]);
 
   const [inputData, setinputData] = useState();
-  const [activeBtn, setActiveBtn] = useState("");
 
   const handleTextFieldInput = (e, isNumber, index, ele_index) => {
     let _data = [...data];
+    console.log(isNumber);
     if (isNumber) {
       if (isNaN(e.target.value)) {
         return;
@@ -79,7 +79,7 @@ export default function DynamicForm() {
     setData(_data);
   };
 
-  const handleCheckboxInput = (e, isNumber, index, ele_index) => {
+  const handleRadioFieldInput = (e, isNumber, index, ele_index) => {
     let _data = [...data];
     if (!_data[index].elements[ele_index].value) {
       _data[index].elements[ele_index].value = [];
@@ -94,9 +94,7 @@ export default function DynamicForm() {
         _data[index].elements[ele_index].value.push(e.target.value);
       }
     }
-    if (_data[index].elements[ele_index].value.length === 0) {
-      delete _data[index].elements[ele_index].value;
-    }
+
     setData(_data);
   };
 
@@ -104,14 +102,12 @@ export default function DynamicForm() {
     if (element.type === "text") {
       return (
         <TextField
-          error={element.error}
           name={element.elementName}
           label={element.label}
           onChange={(e) =>
             handleTextFieldInput(e, element.isNumber, index, ele_index)
           }
           value={element.value?.length > 0 ? element.value : ""}
-          onBlur={() => handleBlur(index, ele_index)}
         />
       );
     }
@@ -120,11 +116,9 @@ export default function DynamicForm() {
         <SelectField
           name={element.elementName}
           label={element.label}
-          error={element.error}
-          onChange={(e) => {
-            handleTextFieldInput(e, element.isNumber, index, ele_index);
-            handleBlur(index, ele_index);
-          }}
+          onChange={(e) =>
+            handleTextFieldInput(e, element.isNumber, index, ele_index)
+          }
           options={element.options}
           value={element.value?.length > 0 ? element.value : ""}
         />
@@ -134,12 +128,10 @@ export default function DynamicForm() {
       return (
         <RadioField
           name={element.elementName}
-          error={element.error}
           label={element.label}
-          onChange={(e) => {
-            handleTextFieldInput(e, element.isNumber, index, ele_index);
-            handleBlur(index, ele_index);
-          }}
+          onChange={(e) =>
+            handleTextFieldInput(e, element.isNumber, index, ele_index)
+          }
           options={element.options}
           value={element.value?.length > 0 ? element.value : ""}
         />
@@ -149,12 +141,10 @@ export default function DynamicForm() {
       return (
         <CheckboxField
           name={element.elementName}
-          error={element.error}
           label={element.label}
-          onChange={(e) => {
-            handleCheckboxInput(e, element.isNumber, index, ele_index);
-            handleBlur(index, ele_index);
-          }}
+          onChange={(e) =>
+            handleRadioFieldInput(e, element.isNumber, index, ele_index)
+          }
           options={element.options}
           value={element.value?.length > 0 ? element.value : ""}
         />
@@ -162,77 +152,21 @@ export default function DynamicForm() {
     }
   };
 
-  const handleSubmit = () => {
-    let _data = [...data];
-    let isError = false;
-    for (let i = 0; i < _data.length; i++) {
-      if (_data[i].subType === activeBtn) {
-        for (let j = 0; j < _data[i].elements.length; j++) {
-          if (_data[i].elements[j].required) {
-            if (
-              _data[i].elements[j].value === "" ||
-              _data[i].elements[j].value === undefined
-            ) {
-              isError = true;
-              _data[i].elements[j].error = true;
-            } else {
-              _data[i].elements[j].error = false;
-              isError = false;
-            }
-          }
-        }
-      }
-    }
-    setData(_data);
-    console.log(isError);
-  };
+  const handleSubmit = () => {};
 
-  const handleBlur = (index, ele_index) => {
-    console.log("object");
-    let _data = [...data];
-
-    if (_data[index].elements[ele_index].required) {
-      if (
-        _data[index].elements[ele_index].value === "" ||
-        _data[index].elements[ele_index].value === undefined
-      ) {
-        _data[index].elements[ele_index].error = true;
-      } else {
-        _data[index].elements[ele_index].error = false;
-      }
-    }
-    setData(_data);
-  };
-
+  useEffect(() => {}, []);
   return (
     <div>
       {console.log(data)}
       <h1>Dynamic Form</h1>
-      <div className="btn__container">
-        {data.map((item) => (
-          <button
-            onClick={() => setActiveBtn(item.subType)}
-            style={{
-              backgroundColor: activeBtn === item.subType ? "#5ff3f8" : "gray",
-            }}
-            key={item.subType}
-          >
-            {item.subType}
-          </button>
-        ))}
-      </div>
-      {data.map((item, index) => {
-        if (activeBtn === item.subType) {
-          return (
-            <div key={item.subType}>
-              {item.elements.map((ele_item, ele_index) =>
-                getFormElement(ele_item, index, ele_index)
-              )}
-            </div>
-          );
-        }
-      })}
-      <button onClick={handleSubmit}>SUBMIT</button>
+      {data.map((item, index) => (
+        <div key={item.subType}>
+          {item.elements.map((ele_item, ele_index) =>
+            getFormElement(ele_item, index, ele_index)
+          )}
+        </div>
+      ))}
+      <button>SUBMIT</button>
     </div>
   );
 }

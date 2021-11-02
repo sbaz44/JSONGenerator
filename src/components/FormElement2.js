@@ -1,20 +1,39 @@
 import React from "react";
+import Inputbox from "./Inputbox";
 
 export function TextField(props) {
-  const { name, label, value, placeholder, isNumber, onChange, ...rest } =
-    props;
+  const {
+    name,
+    label,
+    value,
+
+    onBlur,
+    placeholder,
+    isNumber,
+    onChange,
+    ...rest
+  } = props;
   return (
-    <React.Fragment>
-      {label && <label for={name}>{label}</label>}
-      <input
-        type="text"
-        name={name}
-        placeholder={label}
-        value={value}
-        onChange={onChange}
-        {...rest}
-      />
-    </React.Fragment>
+    <Inputbox
+      value={value}
+      label={label}
+      onChange={onChange}
+      placeholder={label}
+      name={name}
+      onBlur={onBlur}
+      {...rest}
+    />
+    // <React.Fragment>
+    //   {label && <label for={name}>{label}</label>}
+    //   <input
+    //     type="text"
+    //     name={name}
+    //     placeholder={label}
+    //     value={value}
+    //     onChange={onChange}
+    //     {...rest}
+    //   />
+    // </React.Fragment>
   );
 }
 
@@ -26,18 +45,24 @@ export function SelectField(props) {
     value,
     placeholder,
     isNumber,
+    error,
+    helperText,
     onChange,
     ...rest
   } = props;
   return (
-    <React.Fragment>
+    <div>
       {label && <label for={name}>{label}</label>}
-      <select onChange={onChange}>
+      <select onChange={onChange} value={value}>
+        <option value="" disabled />
         {options.map((optn, index) => (
           <option key={optn} value={optn} label={optn} />
         ))}
       </select>
-    </React.Fragment>
+      {error && (
+        <p className="input__error">{helperText ? helperText : "Required"}</p>
+      )}
+    </div>
   );
 }
 
@@ -50,10 +75,12 @@ export function RadioField(props) {
     placeholder,
     isNumber,
     onChange,
+    error,
+    helperText,
     ...rest
   } = props;
   return (
-    <React.Fragment>
+    <div>
       {label && <label for={name}>{label}</label>}
       {options.map((optn, index) => (
         <label>
@@ -69,7 +96,10 @@ export function RadioField(props) {
         </label>
         //   <option key={optn} value={optn} label={optn} />
       ))}
-    </React.Fragment>
+      {error && (
+        <p className="input__error">{helperText ? helperText : "Required"}</p>
+      )}
+    </div>
   );
 }
 
@@ -79,9 +109,11 @@ export function CheckboxField(props) {
     label,
     options,
     value,
+    error,
     placeholder,
     isNumber,
     onChange,
+    helperText,
     ...rest
   } = props;
   return (
@@ -94,13 +126,16 @@ export function CheckboxField(props) {
             key={optn}
             name={optn}
             value={optn}
-            // checked={value === optn}
+            checked={value.includes(optn)}
             onChange={onChange}
           />
           {optn}
         </label>
         //   <option key={optn} value={optn} label={optn} />
       ))}
+      {error && (
+        <p className="input__error">{helperText ? helperText : "Required"}</p>
+      )}
     </React.Fragment>
   );
 }

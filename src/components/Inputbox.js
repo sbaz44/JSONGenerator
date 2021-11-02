@@ -11,6 +11,7 @@ export default function Inputbox(props) {
         className="form__field"
         placeholder={props.label}
         autoFocus={props.autoFocus}
+        onBlur={props.onBlur}
         onFocus={props.onFocus}
       />
       <label for="email" className="form__label2 form__label">
