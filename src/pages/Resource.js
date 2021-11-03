@@ -263,12 +263,12 @@ export default function Resource() {
           databaseType: DBType,
         },
       };
-      if (resrcLimit) data.requiredRamLimit = Number(resrcLimit);
+      if (resrcLimit) data.requiredRamLimit = Number(resrcLimit * 1048576);
 
-      if (resrcRes) data.requiredRamReservation = Number(resrcRes);
+      if (resrcRes) data.requiredRamReservation = Number(resrcRes * 1048576);
       console.log(data);
       let res = await axiosApiInstance.post(
-        "service_mgmt/metadata/service/",
+        "service_mgmt/metadata/service",
         data
       );
       console.log(res);

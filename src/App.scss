@@ -114,7 +114,6 @@ button {
   font-size: 16px;
   cursor: text;
   top: 20px;
-  z-index: -1;
 }
 
 .form__label2,
@@ -481,8 +480,10 @@ header .profle {
 }
 
 .service-preview {
+  display: flex;
+  justify-content: center;
   flex: 2;
-  background: gray;
+  background: rgb(235, 231, 231);
   width: 100%;
   margin: 0 10px;
 
@@ -593,6 +594,9 @@ header .profle {
         outline: none;
       }
     }
+  }
+  .toggle-item {
+    position: relative;
   }
 }
 

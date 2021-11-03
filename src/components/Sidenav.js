@@ -17,9 +17,9 @@ export default function Sidenav(props) {
         <NavLink activeClassName="activeRoute" to="/usecase" exact>
           <li>Service Setting</li>
         </NavLink>
-        <NavLink activeClassName="activeRoute" to="/analytics" exact>
+        {/* <NavLink activeClassName="activeRoute" to="/analytics" exact>
           <li>Analytics Setting</li>
-        </NavLink>
+        </NavLink> */}
       </ul>
     </div>
   );

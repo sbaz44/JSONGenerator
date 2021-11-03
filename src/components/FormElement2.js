@@ -52,7 +52,7 @@ export function SelectField(props) {
   } = props;
   return (
     <div>
-      {label && <label for={name}>{label}</label>}
+      {label && <label for={name}>{label}:</label>}
       <select onChange={onChange} value={value}>
         <option value="" disabled />
         {options.map((optn, index) => (
@@ -81,7 +81,7 @@ export function RadioField(props) {
   } = props;
   return (
     <div>
-      {label && <label for={name}>{label}</label>}
+      {label && <label for={name}>{label}:</label>}
       {options.map((optn, index) => (
         <label>
           <input
@@ -118,7 +118,7 @@ export function CheckboxField(props) {
   } = props;
   return (
     <React.Fragment>
-      {label && <label for={name}>{label}</label>}
+      {label && <label for={name}>{label}: </label>}
       {options.map((optn, index) => (
         <label>
           <input
@@ -126,7 +126,7 @@ export function CheckboxField(props) {
             key={optn}
             name={optn}
             value={optn}
-            checked={value.includes(optn)}
+            checked={value?.includes(optn)}
             onChange={onChange}
           />
           {optn}

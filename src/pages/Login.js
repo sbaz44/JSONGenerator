@@ -4,10 +4,10 @@ import { API_URL } from "../helpers/request";
 export default function Login() {
   let history = useHistory();
 
-  const [username, setUsername] = useState("dipesh");
+  const [username, setUsername] = useState("diycam");
   const [password, setPassword] = useState("admin@123");
   const [accessKey, setAccessKey] = useState(
-    "84d3468375dcd7759c22baf0db2c29a18abf4176"
+    "7abb86814c7ed37a00004e2aa20237794cf17c6e"
   );
 
   const handleClick = async () => {

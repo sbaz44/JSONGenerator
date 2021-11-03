@@ -20,10 +20,14 @@ export default function Service() {
     isOSEmpty: false,
     isHWEmpty: false,
     isIconEmpty: false,
+    isIndustryTypeEmpty: false,
+    isUpdateTypeEmpty: false,
   });
 
   const [serviceName, setServiceName] = useState("");
   const [serviceType, setServiceType] = useState("");
+  const [industry, setIndustry] = useState([]);
+  const [updateType, setUpdateType] = useState("");
   const [serviceDesc, setServiceDesc] = useState("");
   const [serviceVersion, setServiceVersion] = useState("");
   const [serviceTypeOptions, setServiceTypeOptions] = useState([
@@ -33,6 +37,12 @@ export default function Service() {
     "Firmware",
     "Analytics",
     "Database",
+  ]);
+  const [industryTypeOptions, setIndustryTypeOptions] = useState([
+    "Finance",
+    "Banking",
+    "Healthcare",
+    "Contruction",
   ]);
   const [serviceOSSelected, setServiceOSSelected] = useState([]);
   const [outputTypeOption, setoutputTypeOption] = useState([
@@ -138,24 +148,30 @@ export default function Service() {
     if (serviceName === "") {
       _errors["isServiceNameEmpty"] = true;
     }
+    // if (industry.length === 0) {
+    //   _errors["isIndustryTypeEmpty"] = true;
+    // }
+    if (updateType === "") {
+      _errors["isUpdateTypeEmpty"] = true;
+    }
     if (serviceDesc === "") {
       _errors["isServiceDEmpty"] = true;
     }
     if (serviceType === "") {
       _errors["isServiceTypeEmpty"] = true;
     }
-    if (selectedOutputType === "") {
-      _errors["isOutputTypeEmpty"] = true;
-    }
+    // if (selectedOutputType === "") {
+    //   _errors["isOutputTypeEmpty"] = true;
+    // }
     if (serviceVersion === "") {
       _errors["isVersionEmpty"] = true;
     }
-    if (image64 === "") {
-      _errors["isIconEmpty"] = true;
-    }
-    if (HWSelected.length === 0) {
-      _errors["isHWEmpty"] = true;
-    }
+    // if (image64 === "") {
+    //   _errors["isIconEmpty"] = true;
+    // }
+    // if (HWSelected.length === 0) {
+    //   _errors["isHWEmpty"] = true;
+    // }
     if (serviceOSSelected.length === 0) {
       _errors["isOSEmpty"] = true;
     }
@@ -166,10 +182,10 @@ export default function Service() {
       serviceName === "" ||
       serviceDesc === "" ||
       serviceType === "" ||
-      image64 === "" ||
+      // image64 === "" ||
       isServiceNameUnique === false ||
-      selectedOutputType === "" ||
-      HWSelected.length === 0 ||
+      updateType === "" ||
+      // HWSelected.length === 0 ||
       serviceOSSelected.length === 0 ||
       serviceVersion === ""
     ) {
@@ -179,14 +195,16 @@ export default function Service() {
 
     console.log("HERE!");
     let data = {
-      // accessKey: accessKey,
+      accessKey: "7abb86814c7ed37a00004e2aa20237794cf17c6e",
       serviceName: serviceName,
       description: serviceDesc,
       serviceType: serviceType,
       version: serviceVersion,
-      outputType: selectedOutputType,
+      industryType: industry,
+      updateType: updateType,
       compatibleOsVersions: serviceOSSelected,
-      compatibleHardwareVersions: serviceHWSelected,
+      // compatibleHardwareVersions: serviceHWSelected,
+      icon: image64.split(",")[1],
     };
     let res = await axiosApiInstance.post("service_mgmt/", data);
     console.log(res);
@@ -201,6 +219,7 @@ export default function Service() {
       setErrors(_errors);
     }
   };
+
   const getBase64 = (file) => {
     return new Promise((resolve) => {
       let fileInfo;
@@ -220,6 +239,7 @@ export default function Service() {
       console.log(fileInfo);
     });
   };
+
   const handleFileInputChange = (e) => {
     clearError("isIconEmpty");
     let _file = file;
@@ -236,6 +256,7 @@ export default function Service() {
       });
     setFile(e.target.files[0]);
   };
+
   return (
     <div className="service-wrapper">
       {console.log(image64)}
@@ -296,6 +317,79 @@ export default function Service() {
             </label>
           </div>
 
+          <div style={{ marginBottom: "2vw", marginTop: "2vw" }}>
+            <label>Industry Type: </label>
+            {industryTypeOptions.map((optn, index) => (
+              <label>
+                <input
+                  type="checkbox"
+                  key={optn}
+                  name={optn}
+                  value={optn}
+                  checked={industry.includes(optn)}
+                  onChange={(e) => {
+                    let _industry = [...industry];
+                    if (_industry.includes(e.target.value)) {
+                      let indexx = _industry.indexOf(e.target.value);
+                      _industry.splice(indexx, 1);
+                    } else {
+                      _industry.push(e.target.value);
+                    }
+                    setIndustry([..._industry]);
+                  }}
+                />
+                {optn}
+              </label>
+            ))}
+            {/* {errors["isIndustryTypeEmpty"] && (
+              <p className="input__error">Required</p>
+            )} */}
+            {/* <label>
+              Industry Type
+              <select
+                className={
+                  errors["isIndustryTypeEmpty"]
+                    ? "service__select select__error"
+                    : "service__select"
+                }
+                onFocus={() => clearError("isIndustryTypeEmpty")}
+                value={industry}
+                onChange={(e) => setIndustry(e.target.value)}
+              >
+                <option disabled value="">
+                  Choose One
+                </option>
+                {industryTypeOptions.map((item, index) => (
+                  <option key={index + 22} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
+            </label> */}
+          </div>
+
+          <div style={{ marginBottom: "2vw", marginTop: "2vw" }}>
+            <label>
+              Update Type
+              <select
+                className={
+                  errors["isUpdateTypeEmpty"]
+                    ? "service__select select__error"
+                    : "service__select"
+                }
+                onFocus={() => clearError("isUpdateTypeEmpty")}
+                value={updateType}
+                onChange={(e) => setUpdateType(e.target.value)}
+              >
+                <option disabled value="">
+                  Choose One
+                </option>
+                <option value={"Normal"}>Normal</option>
+                <option value={"Critical"}>Critical</option>
+              </select>
+            </label>
+          </div>
+
           <div className="form__group">
             <textarea
               className="form__field"
@@ -347,7 +441,7 @@ export default function Service() {
               ))}
             </div>
           </div>
-          <div style={{ marginBottom: "2vw" }}>
+          {/* <div style={{ marginBottom: "2vw" }}>
             <label
               style={
                 errors["isHWEmpty"] ? { color: "red" } : { color: "inherit" }
@@ -374,9 +468,9 @@ export default function Service() {
                 ))}
               </div>
             </label>
-          </div>
+          </div> */}
 
-          <div style={{ marginBottom: "2vw", marginTop: "2vw" }}>
+          {/* <div style={{ marginBottom: "2vw", marginTop: "2vw" }}>
             <label>
               Output Type
               <select
@@ -399,7 +493,7 @@ export default function Service() {
                 ))}
               </select>
             </label>
-          </div>
+          </div> */}
           {/* {isPopOpen && (
           <Popup>
             <div className="service__pop">
@@ -423,7 +517,7 @@ export default function Service() {
             accept=".png, .jpg, .jpeg"
             onChange={handleFileInputChange}
           />
-          {errors["isIconEmpty"] && <p className="input__error">Required</p>}
+          {/* {errors["isIconEmpty"] && <p className="input__error">Required</p>} */}
         </div>
       </div>
     </div>

@@ -29,6 +29,7 @@ axiosApiInstance.interceptors.response.use(
     if (error.response.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       const access_token = await refreshAccessToken();
+      console.log(access_token);
       axios.defaults.headers.common["Authorization"] = "Bearer " + access_token;
       // const value = JSON.parse(localStorage.getItem("user"));
       // value.access_token = access_token;
@@ -52,7 +53,7 @@ async function refreshAccessToken() {
     const data = await axios.post(API_URL + "users/refresh", "", {
       headers: headers,
     });
-
+    console.log("NEW TOKEN: " + data.data.accessToken);
     return data.data.accessToken;
   } catch (error) {
     console.log("REFRESH TOKEN EXPIRED");
