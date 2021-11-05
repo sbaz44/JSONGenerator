@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useHistory } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { API_URL } from "../helpers/request";
 export default function Login() {
   let history = useHistory();
@@ -62,6 +62,12 @@ export default function Login() {
               value={accessKey}
               type="text"
             />
+          </div>
+          <div>
+            Don't have an account?{" "}
+            <Link style={{ color: "blue" }} to="/signup">
+              Create One
+            </Link>
           </div>
           <button onClick={handleClick} className="primary">
             SUBMIT

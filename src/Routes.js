@@ -10,6 +10,7 @@ import Graphs from "./Graphs";
 import Usecase from "./pages/Usecase";
 import Usecase2 from "./pages/Usecase2";
 import DynamicForm from "./pages/DynamicForm";
+import Signup from "./pages/Signup";
 
 export default function Routes() {
   return (
@@ -20,6 +21,7 @@ export default function Routes() {
         </Route>
         <Route exact path="/analytics" component={Analytics} />
         <Route exact path="/" component={Login} />
+        <Route exact path="/signup" component={Signup} />
         <Route exact path="/resource" component={Resource} />
         <Route exact path="/dependencies" component={Dependencies} />
         <Route exact path="/graphs" component={Graphs} />
