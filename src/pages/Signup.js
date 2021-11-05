@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import { API_URL } from "../helpers/request";
+import Popup from "../components/Popup";
+import Button from "../components/Button";
+import { Link } from "react-router-dom";
 
 export default function Signup() {
   const [fullname, setFullname] = useState();
@@ -8,6 +11,8 @@ export default function Signup() {
   const [email, setEmail] = useState();
   const [phone, setPhone] = useState();
   const [company, setCompany] = useState();
+  const [accessKey, setAccessKey] = useState("");
+  const [popVisible, setPopVisible] = useState(false);
   const handleClick = async () => {
     if (
       fullname === "" ||
@@ -30,7 +35,7 @@ export default function Signup() {
         phone: phone,
         email: email,
         companyName: company,
-        userType: ["user"],
+        userType: ["developer"],
         username: username,
         password: password,
       }),
@@ -38,6 +43,10 @@ export default function Signup() {
     if (res.status === 200) {
       let jsonData = await res.json();
       console.log(res);
+      console.log(jsonData);
+      console.log(res.data);
+      setAccessKey(jsonData.access_token);
+      setPopVisible(true);
       //   localStorage.setItem("accessToken", jsonData.accessToken);
       //   localStorage.setItem("refreshToken", jsonData.refreshToken);
       //   localStorage.setItem("userType", JSON.stringify(jsonData.userType));
@@ -75,7 +84,7 @@ export default function Signup() {
             />
           </div>
           <div className="input-group">
-            <label htmlFor="password">Email</label>
+            <label htmlFor="text">Email</label>
             <input
               onChange={(e) => setEmail(e.target.value)}
               value={email}
@@ -109,6 +118,29 @@ export default function Signup() {
           </button>
         </div>
       </div>
+      {popVisible && (
+        <Popup>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              flexDirection: "column",
+            }}
+            className="service__pop"
+          >
+            <p>Your Access Key:</p>
+            <p>{accessKey}</p>
+            <Link to="/">
+              <Button
+                // disabled={!accessKey}
+                name="Submit"
+                //   onClick={postAccess}
+              />
+            </Link>
+          </div>
+        </Popup>
+      )}
     </div>
   );
 }
