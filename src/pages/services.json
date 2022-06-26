@@ -31,6 +31,37 @@
       }
     },
     {
+      "Service_id": "LOITV1",
+      "Service_name": "Loitering",
+      "Description": "desc",
+      "Status": "Inactive",
+      "Category": "Usecase",
+      "Dependent_services": {
+        "AI": ["Person_Detection_AI"],
+        "Usecase": [],
+        "Analytics": [],
+        "Base": [],
+        "Firmware": [],
+        "Database": []
+      }
+    },
+    {
+      "Service_id": "LOITV1ANA",
+      "Service_name": "Loitering Analytics",
+      "Description": "desc",
+      "Status": "Inactive",
+      "Category": "Analytics",
+      "Dependent_services": {
+        "AI": ["Person_Detection_AI"],
+        "Usecase": ["LOITV1"],
+        "Analytics": [],
+        "Base": [],
+        "Firmware": [],
+        "Database": []
+      }
+    },
+
+    {
       "Service_id": "Early_Camera_Tampering",
       "Service_name": "Early_Camera_Tampering",
       "Description": "desc",

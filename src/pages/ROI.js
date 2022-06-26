@@ -27,33 +27,115 @@ export default function ROI() {
     }
   };
 
+  const LoopDataService = (data_, service_, callback) => {
+    for (const [data_index, data_value] of data_.entries()) {
+      for (const [service_index, service_value] of service_.entries()) {
+        callback(data_value, data_index, service_value, service_index);
+      }
+    }
+  };
+
   const timeslotMouseDown = (i) => {
     let _selectedTimeSlot = _.cloneDeep(selectedTimeSlot);
+    let _data = _.cloneDeep(data);
+    let _service = _.cloneDeep(Services);
     let elePresent = _.includes(selectedTimeSlot, i);
+
+    // push/remove time from selectedTimeSlot array
     if (!elePresent) {
       _selectedTimeSlot.push(i);
     } else {
       _selectedTimeSlot = _selectedTimeSlot.filter((item) => item != i);
+      Loop(_data, (data_ele) => {
+        Loop(_service, (_service_ele) => {
+          if (data_ele.slot === i) {
+            data_ele.disabledService.push(_service_ele.Service_id);
+            data_ele.AI.length = 0;
+            data_ele.Dependent.length = 0;
+            data_ele.Usecases.length = 0;
+          }
+        });
+      });
     }
+
+    //disable Usecases which are out of limits
+    if (elePresent) {
+    } else {
+      let popData = [];
+      Loop(_service, (serEle) => {
+        if (serEle.Dependent_services.AI.length > deepStreamLimit) {
+          popData.push(serEle.Service_id);
+        }
+      });
+      Loop(_data, (data_ele) => {
+        if (data_ele.slot === i) {
+          data_ele.disabledService = [...popData];
+        }
+      });
+    }
+    setData(_data);
     setSelectedTimeSlot([..._selectedTimeSlot]);
     setMouseState(true);
   };
 
-  const cameraNotPresent = () => {
-    console.log("cameraNotPresent()");
+  const usecaseMouseDown = (
+    data_item,
+    data_index,
+    service_item,
+    service_index
+  ) => {
     let _data = _.cloneDeep(data);
     let _service = _.cloneDeep(Service);
-    for (let servEle of _service) {
-      isAllUCSelected.push(false);
-      disabledServices.push(servEle.Service_id);
+    let dataUC = data_item.Usecases;
+    let elePresent = _.includes(data_item.Usecases, service_item.Service_id);
+
+    console.log(data_item, data_index, service_item, service_index);
+    console.log(elePresent);
+    if (!elePresent) {
+      _data[data_index].Usecases.push(service_item.Service_id);
+      const result = _.union(
+        _data[data_index].AI,
+        service_item.Dependent_services.AI
+      );
+      _data[data_index].AI = [...result];
+      if (service_item.Category === "Analytics") {
+        const _res = _.union(
+          _data[data_index].Dependent,
+          service_item.Dependent_services.Usecase
+        );
+        _data[data_index].Dependent = [..._res];
+      }
     }
-    Loop(_data, (dataEle) => {
-      Loop(_service, (servEle) => {
-        dataEle.disabledService.push(servEle.Service_id);
-      });
-    });
     setData([..._data]);
+    setMouseState(true);
+    verifyLimits(data_item, data_index, service_item, service_index, _data);
   };
+
+  const verifyLimits = (
+    data_item,
+    data_index,
+    service_item,
+    service_index,
+    data_
+  ) => {
+    let _data = _.cloneDeep(data_);
+    let _service = _.cloneDeep(Service);
+    let unique_UC_Dependent = _.union(
+      _data[data_index].Dependent,
+      _data[data_index].Usecases
+    );
+    let unique_AI = [...new Set(_data[data_index].AI)];
+    console.log(unique_UC_Dependent, unique_AI);
+    console.log(deepStreamLimit);
+    if (unique_UC_Dependent.length === usecaseLimit) {
+      console.log("Usecase limit reached");
+    } else if (unique_AI.length === deepStreamLimit) {
+      console.log("DS limit reached");
+    } else {
+      console.log("verifyLimits ELSE");
+    }
+  };
+
   const onLoad = () => {
     console.count("first");
     let _apiData = { ...apiData };
@@ -73,6 +155,25 @@ export default function ROI() {
     }
   };
 
+  const cameraNotPresent = () => {
+    console.log("cameraNotPresent()");
+    let _data = _.cloneDeep(data);
+    let _service = _.cloneDeep(Service);
+    for (let servEle of _service) {
+      isAllUCSelected.push(false);
+      disabledServices.push(servEle.Service_id);
+    }
+
+    LoopDataService(
+      _data,
+      _service,
+      (dataEle, dataIndex, servEle, serIndex) => {
+        dataEle.disabledService.push(servEle.Service_id);
+      }
+    );
+
+    setData([..._data]);
+  };
   useEffect(() => {
     onLoad();
   }, []);
@@ -250,6 +351,21 @@ export default function ROI() {
                           : "",
                       }}
                       onMouseDown={() => {
+                        if (
+                          !item.disabledService.includes(
+                            service_item.Service_id
+                          )
+                        ) {
+                          if (isCamerPresent) {
+                          } else {
+                            usecaseMouseDown(
+                              item,
+                              index,
+                              service_item,
+                              service_index
+                            );
+                          }
+                        }
                         //   if (
                         //     !item.disabledService.includes(
                         //       service_item.Service_id
