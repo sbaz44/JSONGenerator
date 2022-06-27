@@ -89,15 +89,19 @@ export default function ROI() {
     let dataUC = data_item.Usecases;
     let elePresent = _.includes(data_item.Usecases, service_item.Service_id);
 
-    console.log(data_item, data_index, service_item, service_index);
     console.log(elePresent);
     if (!elePresent) {
       _data[data_index].Usecases.push(service_item.Service_id);
-      const result = _.union(
-        _data[data_index].AI,
-        service_item.Dependent_services.AI
-      );
-      _data[data_index].AI = [...result];
+      _data[data_index].Usecases = [...new Set(_data[data_index].Usecases)];
+      console.log(_data);
+      // const result = _.union(
+      //   _data[data_index].AI,
+      //   service_item.Dependent_services.AI
+      // );
+      _data[data_index].AI = [
+        ..._data[data_index].AI,
+        ...service_item.Dependent_services.AI,
+      ];
       if (service_item.Category === "Analytics") {
         const _res = _.union(
           _data[data_index].Dependent,
@@ -105,7 +109,51 @@ export default function ROI() {
         );
         _data[data_index].Dependent = [..._res];
       }
+    } else {
+      console.log("else");
+      const ucIndex = _data[data_index].Usecases.indexOf(
+        service_item.Service_id
+      );
+      _data[data_index].Usecases.splice(ucIndex, 1);
+      console.log(ucIndex);
+      // LoopDataService(
+      //   _data,
+      //   _service,
+      //   (dataEle, dataIndex, servEle, serIndex) => {
+      //     dataEle.disabledService.push(servEle.Service_id);
+      //   }
+      // );
+      console.log(_data[data_index].AI, service_item.Dependent_services.AI);
+      LoopDataService(
+        _data[data_index].AI,
+        service_item.Dependent_services.AI,
+        (dataEle, dataIndex, servEle, serIndex) => {
+          console.log(dataEle, dataIndex, servEle, serIndex);
+          if (dataEle === servEle) {
+            const aiIndex = _data[data_index].AI.indexOf(servEle);
+            console.log(aiIndex);
+            if (aiIndex >= 0) {
+              _data[data_index].AI.splice(aiIndex, 1);
+            }
+          }
+          // dataEle.disabledService.push(servEle.Service_id);
+        }
+      );
+
+      if (service_item.Category === "Analytics") {
+        let dArr = _data[data_index].Dependent;
+        Loop(service_item.Dependent_services.Usecase, (u_ele) => {
+          if (dArr.includes(u_ele)) {
+            let index = _data[data_index].Dependent.indexOf(u_ele);
+            console.log(index);
+            if (index >= 0) {
+              _data[data_index].Dependent.splice(index, 1);
+            }
+          }
+        });
+      }
     }
+    console.log(_data);
     setData([..._data]);
     setMouseState(true);
     verifyLimits(data_item, data_index, service_item, service_index, _data);
@@ -119,25 +167,115 @@ export default function ROI() {
     data_
   ) => {
     let _data = _.cloneDeep(data_);
-    let _service = _.cloneDeep(Service);
     let unique_UC_Dependent = _.union(
       _data[data_index].Dependent,
       _data[data_index].Usecases
     );
     let unique_AI = [...new Set(_data[data_index].AI)];
-    console.log(unique_UC_Dependent, unique_AI);
-    console.log(deepStreamLimit);
+    console.log(unique_UC_Dependent);
+    console.log(unique_AI);
     if (unique_UC_Dependent.length === usecaseLimit) {
       console.log("Usecase limit reached");
+      usecaseLimitReached(
+        data_item,
+        data_index,
+        service_item,
+        service_index,
+        data_
+      );
     } else if (unique_AI.length === deepStreamLimit) {
       console.log("DS limit reached");
+      deepstreamLimitReached(
+        data_item,
+        data_index,
+        service_item,
+        service_index,
+        data_
+      );
     } else {
+      console.log(_data);
       console.log("verifyLimits ELSE");
     }
   };
 
+  const usecaseLimitReached = (
+    data_item,
+    data_index,
+    service_item,
+    service_index,
+    data_
+  ) => {
+    console.log("usecaseLimitReached()");
+    let _data = _.cloneDeep(data_);
+    let _service = _.cloneDeep(Service);
+    let _usecases = _.cloneDeep(_data[data_index].Usecases);
+    let _AI = _data[data_index].AI;
+    console.log(data_);
+    Array.prototype.push.apply(_usecases, data_item.Dependent);
+    // _usecases = [...new Set(_usecases)];
+    Loop(_service, (ele) => {
+      if (!_usecases.includes(ele.Service_id)) {
+        _data[data_index].disabledService.push(ele.Service_id);
+      }
+    });
+    _data[data_index].disabledService = [
+      ...new Set(_data[data_index].disabledService),
+    ];
+    _data[data_index].Usecases = [...new Set(_data[data_index].Usecases)];
+    console.log(_data);
+    setData([..._data]);
+  };
+
+  const deepstreamLimitReached = (
+    data_item,
+    data_index,
+    service_item,
+    service_index,
+    data_
+  ) => {
+    console.log("deepstreamLimitReached()");
+    let _data = _.cloneDeep(data_);
+    let _service = _.cloneDeep(Service);
+    let _usecases = _data[data_index].Usecases;
+    let _AI = _data[data_index].AI;
+
+    Loop(_service, (serv_ele) => {
+      //checking if Services is not greater than DS Limit
+      if (serv_ele.Dependent_services.AI.length <= deepStreamLimit) {
+        let arr = _.union(_AI, serv_ele.Dependent_services.AI);
+        // console.log(arr);
+        if (arr.length > deepStreamLimit) {
+          console.log("IF");
+          _data[data_index].disabledService.push(serv_ele.Service_id);
+          _data[data_index].disabledService = [
+            ...new Set(_data[data_index].disabledService),
+          ];
+        } else {
+          console.log("ELSE");
+
+          if (_data[data_index].disabledService.includes(serv_ele.Service_id)) {
+            var index = _data[data_index].disabledService.indexOf(
+              serv_ele.Service_id
+            );
+            _data[data_index].disabledService.splice(index, 1);
+            _data[data_index].disabledService = [
+              ...new Set(_data[data_index].disabledService),
+            ];
+          }
+          // console.log(serv_ele.Service_id);
+        }
+      } else {
+        _data[data_index].disabledService.push(serv_ele.Service_id);
+        _data[data_index].disabledService = [
+          ...new Set(_data[data_index].disabledService),
+        ];
+      }
+    });
+    console.log(_data);
+    setData([..._data]);
+  };
+
   const onLoad = () => {
-    console.count("first");
     let _apiData = { ...apiData };
     let apiDataKeys = Object.keys(_apiData);
     let cameraLength = 0;
@@ -297,6 +435,7 @@ export default function ROI() {
             {Service.map((service_item, service_index) => (
               <div className="flex" key={service_item.Service_id}>
                 <h4 className="name">
+                  {service_index + 1}{" "}
                   {service_item.Service_name.replaceAll("_", " ")}
                 </h4>
                 <div
