@@ -115,30 +115,14 @@ export default function ROI() {
         service_item.Service_id
       );
       _data[data_index].Usecases.splice(ucIndex, 1);
-      console.log(ucIndex);
-      // LoopDataService(
-      //   _data,
-      //   _service,
-      //   (dataEle, dataIndex, servEle, serIndex) => {
-      //     dataEle.disabledService.push(servEle.Service_id);
-      //   }
-      // );
-      console.log(_data[data_index].AI, service_item.Dependent_services.AI);
-      LoopDataService(
-        _data[data_index].AI,
-        service_item.Dependent_services.AI,
-        (dataEle, dataIndex, servEle, serIndex) => {
-          console.log(dataEle, dataIndex, servEle, serIndex);
-          if (dataEle === servEle) {
-            const aiIndex = _data[data_index].AI.indexOf(servEle);
-            console.log(aiIndex);
-            if (aiIndex >= 0) {
-              _data[data_index].AI.splice(aiIndex, 1);
-            }
-          }
-          // dataEle.disabledService.push(servEle.Service_id);
+
+      Loop(service_item.Dependent_services.AI, (serEle) => {
+        let index = _data[data_index].AI.indexOf(serEle);
+        console.log(index);
+        if (index >= 0) {
+          _data[data_index].AI.splice(index, 1);
         }
-      );
+      });
 
       if (service_item.Category === "Analytics") {
         let dArr = _data[data_index].Dependent;
@@ -195,6 +179,7 @@ export default function ROI() {
     } else {
       console.log(_data);
       console.log("verifyLimits ELSE");
+      toggleUsecases(data_item, data_index, service_item, service_index, data_);
     }
   };
 
@@ -237,7 +222,8 @@ export default function ROI() {
     let _data = _.cloneDeep(data_);
     let _service = _.cloneDeep(Service);
     let _usecases = _data[data_index].Usecases;
-    let _AI = _data[data_index].AI;
+    let _AI = _.clone(_data[data_index].AI);
+    console.log(_data);
 
     Loop(_service, (serv_ele) => {
       //checking if Services is not greater than DS Limit
@@ -245,14 +231,11 @@ export default function ROI() {
         let arr = _.union(_AI, serv_ele.Dependent_services.AI);
         // console.log(arr);
         if (arr.length > deepStreamLimit) {
-          console.log("IF");
           _data[data_index].disabledService.push(serv_ele.Service_id);
           _data[data_index].disabledService = [
             ...new Set(_data[data_index].disabledService),
           ];
         } else {
-          console.log("ELSE");
-
           if (_data[data_index].disabledService.includes(serv_ele.Service_id)) {
             var index = _data[data_index].disabledService.indexOf(
               serv_ele.Service_id
@@ -271,6 +254,40 @@ export default function ROI() {
         ];
       }
     });
+    console.log(_data);
+    setData([..._data]);
+  };
+
+  const toggleUsecases = (
+    data_item,
+    data_index,
+    service_item,
+    service_index,
+    data_
+  ) => {
+    console.log("toggleUsecases()");
+    let _data = _.cloneDeep(data_);
+    let _service = _.cloneDeep(Service);
+    let _AI = _data[data_index].AI;
+    let unique_AI = _.union(_AI);
+    console.log(unique_AI);
+    if (!unique_AI.length) {
+      _data[data_index].AI.length = 0;
+      _data[data_index].Dependent.length = 0;
+      _data[data_index].Usecases.length = 0;
+      let popData = [];
+      Loop(_service, (serEle) => {
+        if (serEle.Dependent_services.AI.length > deepStreamLimit) {
+          popData.push(serEle.Service_id);
+        }
+      });
+      _data[data_index].disabledService = [...popData];
+    } else {
+      console.log("else");
+    }
+    _data[data_index].disabledService = _.union(
+      _data[data_index].disabledService
+    );
     console.log(_data);
     setData([..._data]);
   };
