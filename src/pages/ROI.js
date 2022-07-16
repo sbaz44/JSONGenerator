@@ -197,6 +197,7 @@ export default function ROI() {
     let _AI = _data[data_index].AI;
     console.log(data_);
     Array.prototype.push.apply(_usecases, data_item.Dependent);
+    console.log(_usecases);
     // _usecases = [...new Set(_usecases)];
     Loop(_service, (ele) => {
       if (!_usecases.includes(ele.Service_id)) {
@@ -221,7 +222,6 @@ export default function ROI() {
     console.log("deepstreamLimitReached()");
     let _data = _.cloneDeep(data_);
     let _service = _.cloneDeep(Service);
-    let _usecases = _data[data_index].Usecases;
     let _AI = _.clone(_data[data_index].AI);
     console.log(_data);
 
@@ -229,13 +229,14 @@ export default function ROI() {
       //checking if Services is not greater than DS Limit
       if (serv_ele.Dependent_services.AI.length <= deepStreamLimit) {
         let arr = _.union(_AI, serv_ele.Dependent_services.AI);
-        // console.log(arr);
+        console.log(arr);
         if (arr.length > deepStreamLimit) {
           _data[data_index].disabledService.push(serv_ele.Service_id);
           _data[data_index].disabledService = [
             ...new Set(_data[data_index].disabledService),
           ];
         } else {
+          console.log("ELSE");
           if (_data[data_index].disabledService.includes(serv_ele.Service_id)) {
             var index = _data[data_index].disabledService.indexOf(
               serv_ele.Service_id
@@ -244,6 +245,8 @@ export default function ROI() {
             _data[data_index].disabledService = [
               ...new Set(_data[data_index].disabledService),
             ];
+          } else {
+            console.log("ELSE2");
           }
           // console.log(serv_ele.Service_id);
         }
@@ -283,6 +286,27 @@ export default function ROI() {
       });
       _data[data_index].disabledService = [...popData];
     } else {
+      let popData = [];
+      Loop(_service, (serEle) => {
+        if (
+          serEle.Dependent_services.AI.length + unique_AI.length >
+          deepStreamLimit
+        ) {
+          popData.push(serEle.Service_id);
+        } else {
+          if (serEle.Category === "Analytics") {
+            if (
+              serEle.Dependent_services.Usecase.length +
+                _data[data_index].Usecases.length +
+                1 >
+              usecaseLimit
+            ) {
+              popData.push(serEle.Service_id);
+            }
+          }
+        }
+      });
+      _data[data_index].disabledService = [...popData];
       console.log("else");
     }
     _data[data_index].disabledService = _.union(
