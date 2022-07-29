@@ -604,3 +604,16 @@ header .profle {
 .needs-validation {
   width: 100%;
 }
+
+.open {
+  width: 300px !important;
+  height: 200px !important;
+}
+
+#box {
+  width: 0;
+  height: 0;
+  transition: all 1s;
+  background-color: red;
+  overflow: hidden;
+}

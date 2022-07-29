@@ -12,6 +12,7 @@ import Usecase2 from "./pages/Usecase2";
 import DynamicForm from "./pages/DynamicForm";
 import Signup from "./pages/Signup";
 import ROI from "./pages/ROI";
+import Canvas from "./pages/Canvas";
 
 export default function Routes() {
   return (
@@ -30,6 +31,7 @@ export default function Routes() {
         <Route exact path="/usecase2" component={Usecase2} />
         <Route exact path="/dynamic" component={DynamicForm} />
         <Route exact path="/roi" component={ROI} />
+        <Route exact path="/canvas" component={Canvas} />
       </Switch>
     </Router>
   );
