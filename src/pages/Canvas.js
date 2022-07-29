@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 let LOIClicks = 0;
 let lastClick = [0, 0];
 let dots = 0;
+let finalROI = [];
 
 //  setshowErrorModal((prevState) => ({
 //             ...prevState,
@@ -16,6 +17,27 @@ export default function Canvas() {
   const [Type, setType] = useState("ROI");
   const [Columns, setColumns] = useState(0);
   const [ROICord, setROICord] = useState([]);
+  const inside = (point, vs) => {
+    // ray-casting algorithm based on
+    // https://wrf.ecse.rpi.edu/Research/Short_Notes/pnpoly.html/pnpoly.html
+
+    let x = point[0],
+      y = point[1];
+
+    let inside = false;
+    for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+      let xi = vs[i][0],
+        yi = vs[i][1];
+      let xj = vs[j][0],
+        yj = vs[j][1];
+
+      let intersect =
+        yi > y != yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+      if (intersect) inside = !inside;
+    }
+
+    return inside;
+  };
   const draw = (w = 640, h = 480, step = 50) => {
     let ctx = document.getElementById("canvas").getContext("2d");
     ctx.beginPath();
@@ -85,8 +107,8 @@ export default function Canvas() {
     ctx.fill();
   };
   const drawROI = (moveto, lineto) => {
-    var c = document.getElementById("canvas");
-    var ctx = c.getContext("2d");
+    let c = document.getElementById("canvas");
+    let ctx = c.getContext("2d");
     ctx.fillStyle = "red";
     ctx.strokeStyle = "red";
     ctx.beginPath();
@@ -105,7 +127,9 @@ export default function Canvas() {
       let x = e.clientX - rect.left;
       let y = e.clientY - rect.top;
       dots += 1;
+      finalROI.push([x, y]);
       setROICord((oldArray) => [...oldArray, { x, y }]);
+
       drawCoordinates(x, y);
       if (dots === 4) {
         //check useEffect
@@ -124,10 +148,15 @@ export default function Canvas() {
     let x = e.clientX - rect.left;
     let y = e.clientY - rect.top;
     console.log(x, y);
+    if (!inside([x, y], finalROI)) {
+      alert("draw inside ROI");
+      return;
+    }
     if (LOIClicks != 1) {
       LOIClicks++;
       lastClick = [{ x, y }];
       drawCoordinates(x, y);
+      console.log();
     } else {
       ctx.beginPath();
       ctx.moveTo(lastClick[0].x, lastClick[0].y);
@@ -136,8 +165,9 @@ export default function Canvas() {
       ctx.stroke();
       LOIClicks = 0;
       lastClick = [...lastClick, { x1: x, y1: y }];
+      console.log(inside([x, y], finalROI));
     }
-    console.log(lastClick);
+    // console.log(lastClick);
   };
 
   useEffect(() => {
@@ -151,7 +181,7 @@ export default function Canvas() {
     <div
       style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
     >
-      {console.log(ROICord)}
+      {console.log(ROICord, finalROI)}
       <p>canvas</p>
       <p>Type: {Type}</p>
       <canvas
