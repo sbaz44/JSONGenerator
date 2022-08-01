@@ -1,0 +1,28 @@
+$desk: 100/1920;
+
+.canvas_container {
+  display: flex;
+  .canvas_ {
+    flex: 2;
+  }
+  .card_container_wrapper {
+    flex: 2;
+    margin-top: 3vw;
+    border: 2px solid red;
+    align-self: baseline;
+    .card_container {
+      display: flex;
+      flex: 1;
+      width: 100%;
+    }
+    .loi_card {
+      position: relative;
+      padding-bottom: 4vw;
+      .add_loi {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+      }
+    }
+  }
+}
