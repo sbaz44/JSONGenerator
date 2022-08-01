@@ -111,17 +111,7 @@ export default function Canvas() {
   const redrawCanvas = (roiData = ROICord, loiData = LOICord) => {
     let ctx = document.getElementById("canvas").getContext("2d");
     ctx.clearRect(0, 0, 640, 480);
-    // ROICord.map((item, idx) =>
-    //   idx === 3
-    //     ? drawROI(
-    //         [ROICord[idx].x, ROICord[idx].y],
-    //         [ROICord[0].x, ROICord[0].y]
-    //       )
-    //     : drawROI(
-    //         [ROICord[idx].x, ROICord[idx].y],
-    //         [ROICord[idx + 1].x, ROICord[idx + 1].y]
-    //       )
-    // );
+
     roiData.map((item, idx) =>
       idx === 3
         ? drawROI(
@@ -174,6 +164,7 @@ export default function Canvas() {
     let x = e.clientX - rect.left;
     let y = e.clientY - rect.top;
     console.log(x, y);
+    if (LOIClicks > 1) return;
     if (!inside([x, y], finalROI)) {
       return;
     }
@@ -187,7 +178,8 @@ export default function Canvas() {
       ctx.lineTo(x, y, 6);
       ctx.strokeStyle = "#ff2626";
       ctx.stroke();
-      LOIClicks = 0;
+      LOIClicks++;
+      // LOIClicks = 0;
       lastClick = [...lastClick, { x2: x, y2: y }];
       if (lastClick[0].x1 > lastClick[1].x2) {
         lastClick[0].x1 = lastClick[0].x1 + lastClick[1].x2;
@@ -206,30 +198,6 @@ export default function Canvas() {
         x2: lastClick[1].x2,
         y2: lastClick[1].y2,
       };
-      console.log(_LOICord[activeIndex]);
-
-      //   _LOICord[activeIndex] = {
-      //     {
-      //       ..._LOICord[activeIndex],
-      //     x1: lastClick[0].x1,
-      //       y1: lastClick[0].y1,
-      //         x2: lastClick[1].x2,
-      //           y2: lastClick[1].y2,
-      //     },
-      // };
-      console.log(_LOICord);
-      // console.log(activeIndex);
-      // // setLOICord((oldArray) => [
-      // //   ...oldArray,
-      //   {
-      //     ...LOICord[activeIndex],
-      //     x1: lastClick[0].x1,
-      //     y1: lastClick[0].y1,
-      //     x2: lastClick[1].x2,
-      //     y2: lastClick[1].y2,
-      //   },
-      // // ]);
-
       setLOICord([..._LOICord]);
     }
     console.log(lastClick);
@@ -247,10 +215,11 @@ export default function Canvas() {
 
   const addNewLOI = () => {
     if (validateLOIData()) {
-      console.log("VALIDATIOn");
+      console.log("VALIDATION");
       return;
     }
     activeIndex += 1;
+    LOIClicks = 0;
     setLOICord((oldArray) => [
       ...oldArray,
       {
@@ -279,7 +248,41 @@ export default function Canvas() {
     if (arr.includes(true)) return true;
     return false;
   };
+  const postData = () => {
+    let _LOICord = [...LOICord];
+    let body = {
+      roi1: {
+        loicord: {},
+        roicords: {},
+        roiName: "roi1",
+      },
+    };
+    let roiObj = {};
+    for (let i = 0; i < ROICord.length; i++) {
+      roiObj["x" + [i + 1]] = ROICord[i].x;
+      roiObj["y" + [i + 1]] = ROICord[i].y;
+    }
+    body.roi1.roicords = { ...roiObj };
+    let loiObj = {};
 
+    for (let i = 0; i < LOICord.length; i++) {
+      let value =
+        LOICord[i].type === "Latitude"
+          ? "lat-" + LOICord[i].label
+          : "long-" + LOICord[i].label;
+      loiObj["line" + Number(i + 1)] = {
+        x1: LOICord[i].x1,
+        y1: LOICord[i].y1,
+        x1: LOICord[i].x1,
+        y2: LOICord[i].y2,
+        label: value,
+      };
+    }
+    body.roi1.loicord = { ...loiObj };
+
+    console.log(loiObj);
+    console.log(body);
+  };
   useEffect(() => {
     if (dots === 4) {
       setType("LOI");
@@ -301,8 +304,8 @@ export default function Canvas() {
   }, [ROICord]);
 
   useEffect(() => {
-    // drawROILOI();
-    // setType("LOI");
+    drawROILOI();
+    setType("LOI");
   }, []);
 
   return (
@@ -387,6 +390,9 @@ export default function Canvas() {
           </button>
         </div>
       </div>
+      <button className="submit_btn" onClick={postData}>
+        Submit
+      </button>
     </div>
   );
 }
@@ -399,9 +405,37 @@ const staticData = {
     { x: 168.75, y: 312.75 },
   ],
   loi: [
-    // { x1: 157.75, y1: 86.75, x2: 531.75, y2: 264.75 },
-    // { x1: 526.75, y1: 55.75, x2: 176.75, y2: 303.75 },
-    // { x1: 340.75, y1: 66.75, x2: 361.75, y2: 287.75 },
-    // { x1: 164.75, y1: 205.75, x2: 533.75, y2: 151.75 },
+    {
+      x1: 157.75,
+      y1: 86.75,
+      x2: 531.75,
+      y2: 264.75,
+      type: "Longitude",
+      label: "a",
+    },
+    {
+      x1: 526.75,
+      y1: 55.75,
+      x2: 176.75,
+      y2: 303.75,
+      type: "Longitude",
+      label: "b",
+    },
+    {
+      x1: 340.75,
+      y1: 66.75,
+      x2: 361.75,
+      y2: 287.75,
+      type: "Longitude",
+      label: "f",
+    },
+    {
+      x1: 164.75,
+      y1: 205.75,
+      x2: 533.75,
+      y2: 151.75,
+      type: "Longitude",
+      label: "s",
+    },
   ],
 };

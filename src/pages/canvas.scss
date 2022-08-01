@@ -1,6 +1,7 @@
 $desk: 100/1920;
 
 .canvas_container {
+  position: relative;
   display: flex;
   .canvas_ {
     flex: 2;
@@ -24,5 +25,10 @@ $desk: 100/1920;
         bottom: 0;
       }
     }
+  }
+  .submit_btn {
+    position: absolute;
+    left: 45%;
+    top: 100%;
   }
 }
