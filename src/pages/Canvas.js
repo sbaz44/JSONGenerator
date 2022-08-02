@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./canvas.scss";
 let LOIClicks = 0;
 let lastClick = [0, 0];
+let _lastClick = [0, 0];
 let dots = 0;
 let finalROI = []; //only to pass it as param in INSIDE function
 let activeIndex = -1;
@@ -12,6 +13,7 @@ export default function Canvas() {
   const [Columns, setColumns] = useState(0);
   const [ROICord, setROICord] = useState([]);
   const [LOICord, setLOICord] = useState([]);
+
   const inside = (point, vs) => {
     let x = point[0],
       y = point[1];
@@ -30,6 +32,7 @@ export default function Canvas() {
 
     return inside;
   };
+
   const draw = (w = 640, h = 480, step = 50) => {
     let ctx = document.getElementById("canvas").getContext("2d");
     ctx.beginPath();
@@ -91,6 +94,7 @@ export default function Canvas() {
     ctx.stroke();
     console.log(rowPoints, columnPoints);
   };
+
   const drawCoordinates = (x, y) => {
     let ctx = document.getElementById("canvas").getContext("2d");
     ctx.fillStyle = "#ff2626"; // Red color
@@ -98,6 +102,7 @@ export default function Canvas() {
     ctx.arc(x, y, 1, 0, Math.PI * 2, true);
     ctx.fill();
   };
+
   const drawROI = (moveto, lineto) => {
     let c = document.getElementById("canvas");
     let ctx = c.getContext("2d");
@@ -108,6 +113,7 @@ export default function Canvas() {
     ctx.lineTo(lineto[0], lineto[1]);
     ctx.stroke();
   };
+
   const redrawCanvas = (roiData = ROICord, loiData = LOICord) => {
     let ctx = document.getElementById("canvas").getContext("2d");
     ctx.clearRect(0, 0, 640, 480);
@@ -125,15 +131,18 @@ export default function Canvas() {
     );
 
     loiData.map((item, idx) => {
-      ctx.beginPath();
-      ctx.moveTo(item.x1, item.y1);
-      ctx.lineTo(item.x2, item.y2, 6);
-      ctx.strokeStyle = "#ff2626";
-      ctx.stroke();
+      if (item.x1 && item.x2 && item.y1 && item.y2) {
+        ctx.beginPath();
+        ctx.moveTo(item.x1, item.y1);
+        ctx.lineTo(item.x2, item.y2, 6);
+        ctx.strokeStyle = "#ff2626";
+        ctx.stroke();
+      }
     });
     setROICord(roiData);
     setLOICord(loiData);
   };
+
   const handleROI = (e) => {
     let canvas = document.getElementById("canvas");
     if (dots >= 4) {
@@ -156,6 +165,8 @@ export default function Canvas() {
   };
 
   const handleLOI = (e) => {
+    console.log(activeIndex);
+
     if (ROICord.length === 0) return;
     if (LOICord.length === 0) return;
     let canvas = document.getElementById("canvas");
@@ -164,6 +175,7 @@ export default function Canvas() {
     let x = e.clientX - rect.left;
     let y = e.clientY - rect.top;
     console.log(x, y);
+    console.log(LOIClicks);
     if (LOIClicks > 1) return;
     if (!inside([x, y], finalROI)) {
       return;
@@ -171,6 +183,7 @@ export default function Canvas() {
     if (LOIClicks != 1) {
       LOIClicks++;
       lastClick = [{ x1: x, y1: y }];
+      _lastClick = [{ x: x, y: y }];
       drawCoordinates(x, y);
     } else {
       ctx.beginPath();
@@ -181,7 +194,26 @@ export default function Canvas() {
       LOIClicks++;
       // LOIClicks = 0;
       lastClick = [...lastClick, { x2: x, y2: y }];
-      if (lastClick[0].x1 > lastClick[1].x2) {
+      _lastClick = [..._lastClick, { x: x, y: y }];
+
+      const d = (point) => {
+        return Math.pow(point.x, 2) + Math.pow(point.y, 2);
+      };
+      var closest = _lastClick.slice(1).reduce(
+        function (min, p) {
+          if (d(p) < min.d) min.point = p;
+          return min;
+        },
+        { point: _lastClick[0], d: d(_lastClick[0]) }
+      ).point;
+
+      let newClosest = {
+        x1: closest.x,
+        y1: closest.y,
+      };
+
+      if (newClosest.x1 !== lastClick[0].x1) {
+        console.log("SWAP");
         lastClick[0].x1 = lastClick[0].x1 + lastClick[1].x2;
         lastClick[1].x2 = lastClick[0].x1 - lastClick[1].x2;
         lastClick[0].x1 = lastClick[0].x1 - lastClick[1].x2;
@@ -218,7 +250,7 @@ export default function Canvas() {
       console.log("VALIDATION");
       return;
     }
-    activeIndex += 1;
+    activeIndex = LOICord.length;
     LOIClicks = 0;
     setLOICord((oldArray) => [
       ...oldArray,
@@ -234,13 +266,16 @@ export default function Canvas() {
   };
 
   const validateLOIData = () => {
+    console.log(activeIndex);
     let arr = [];
     if (ROICord.length === 0) arr.push(true);
     LOICord.map((item) => {
       if (!item.x2) {
+        console.log("X2 empty");
         arr.push(true);
       }
       if (!item.label) {
+        console.log("Label empty");
         arr.push(true);
       }
     });
@@ -273,7 +308,7 @@ export default function Canvas() {
       loiObj["line" + Number(i + 1)] = {
         x1: LOICord[i].x1,
         y1: LOICord[i].y1,
-        x1: LOICord[i].x1,
+        x2: LOICord[i].x2,
         y2: LOICord[i].y2,
         label: value,
       };
@@ -285,10 +320,12 @@ export default function Canvas() {
   };
   useEffect(() => {
     if (dots === 4) {
+      console.log("useeeffect");
       setType("LOI");
       drawROI([ROICord[2].x, ROICord[2].y], [ROICord[3].x, ROICord[3].y]);
       drawROI([ROICord[3].x, ROICord[3].y], [ROICord[0].x, ROICord[0].y]);
       activeIndex += 1;
+      console.log(activeIndex);
       setLOICord((oldArray) => [
         ...oldArray,
         {
@@ -355,10 +392,13 @@ export default function Canvas() {
                 placeholder="Label"
                 value={item.label}
                 onChange={(e) => {
-                  // return textarea.value.match(/^\d+(\.\d+)?$/);
-                  let _data = [...LOICord];
-                  _data[idx].label = e.target.value;
-                  setLOICord([..._data]);
+                  const value = e.target.value;
+                  const regex = /^\d{1,}(\.\d{0,50})?$/;
+                  if (value.match(regex) || value === "") {
+                    let _data = [...LOICord];
+                    _data[idx].label = e.target.value;
+                    setLOICord([..._data]);
+                  }
                 }}
               />
               <select
@@ -374,7 +414,7 @@ export default function Canvas() {
               </select>
               <button
                 onClick={() => {
-                  activeIndex -= 1;
+                  // activeIndex -= 1;
                   let _data = [...LOICord];
                   _data.splice(idx, 1);
                   setLOICord([..._data]);
@@ -382,6 +422,28 @@ export default function Canvas() {
                 }}
               >
                 Remove
+              </button>
+              <button
+                onClick={() => {
+                  if (validateLOIData()) {
+                    return;
+                  }
+                  activeIndex = idx;
+                  console.log(idx);
+                  let _data = [...LOICord];
+                  _data[idx] = {
+                    ..._data[idx],
+                    x1: 0,
+                    x2: 0,
+                    y1: 0,
+                    y2: 0,
+                  };
+                  LOIClicks = 0;
+                  setLOICord([..._data]);
+                  redrawCanvas(ROICord, _data);
+                }}
+              >
+                Reset
               </button>
             </div>
           ))}
@@ -399,43 +461,43 @@ export default function Canvas() {
 
 const staticData = {
   roi: [
-    { x: 139.75, y: 74.75 },
-    { x: 532.75, y: 51.75 },
-    { x: 550.75, y: 274.75 },
-    { x: 168.75, y: 312.75 },
+    { x: 0, y: 4 },
+    { x: 634, y: 8 },
+    { x: 635, y: 470 },
+    { x: 0, y: 480 },
   ],
   loi: [
-    {
-      x1: 157.75,
-      y1: 86.75,
-      x2: 531.75,
-      y2: 264.75,
-      type: "Longitude",
-      label: "a",
-    },
-    {
-      x1: 526.75,
-      y1: 55.75,
-      x2: 176.75,
-      y2: 303.75,
-      type: "Longitude",
-      label: "b",
-    },
-    {
-      x1: 340.75,
-      y1: 66.75,
-      x2: 361.75,
-      y2: 287.75,
-      type: "Longitude",
-      label: "f",
-    },
-    {
-      x1: 164.75,
-      y1: 205.75,
-      x2: 533.75,
-      y2: 151.75,
-      type: "Longitude",
-      label: "s",
-    },
+    // {
+    //   x1: 157.75,
+    //   y1: 86.75,
+    //   x2: 531.75,
+    //   y2: 264.75,
+    //   type: "Longitude",
+    //   label: "a",
+    // },
+    // {
+    //   x1: 526.75,
+    //   y1: 55.75,
+    //   x2: 176.75,
+    //   y2: 303.75,
+    //   type: "Longitude",
+    //   label: "b",
+    // },
+    // {
+    //   x1: 340.75,
+    //   y1: 66.75,
+    //   x2: 361.75,
+    //   y2: 287.75,
+    //   type: "Longitude",
+    //   label: "f",
+    // },
+    // {
+    //   x1: 164.75,
+    //   y1: 205.75,
+    //   x2: 533.75,
+    //   y2: 151.75,
+    //   type: "Longitude",
+    //   label: "s",
+    // },
   ],
 };
