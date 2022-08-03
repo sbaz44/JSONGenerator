@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Scrollbars from "react-custom-scrollbars";
 import "./canvas.scss";
 let LOIClicks = 0;
 let lastClick = [0, 0];
@@ -8,11 +9,13 @@ let finalROI = []; //only to pass it as param in INSIDE function
 let activeIndex = -1;
 let isUpdate = false;
 export default function Canvas() {
+  let cnt = 1;
   const [Demo, setDemo] = useState(false);
   const [Rows, setRows] = useState(0);
   const [Type, setType] = useState("ROI");
   const [Columns, setColumns] = useState(0);
-  const [Counter, setCounter] = useState(40);
+  const [Counter, setCounter] = useState(15);
+  const [Count, setCount] = useState(20);
   const [ROICord, setROICord] = useState([]);
   const [LOICord, setLOICord] = useState([]);
 
@@ -402,125 +405,154 @@ export default function Canvas() {
   useEffect(() => {
     // drawROILOI();
     // setType("LOI");
-
-    getData();
-
+    // getData();
     // console.log(_ddata);
   }, []);
 
   return (
-    <div className="canvas_container">
-      {console.log("ROICORD:", ROICord)}
-      {console.log("LOICORD:", LOICord)}
-      <div className="canvas_">
-        <p>canvas</p>
-        <p>Type: {Type}</p>
-        <canvas
-          id="canvas"
-          width="640px"
-          height="480px"
-          style={{ background: "gray", alignSelf: "center" }}
-          onClick={(e) => {
-            if (Type === "ROI") handleROI(e);
-            else handleLOI(e);
-          }}
-        />
-      </div>
-      <div className="card_container_wrapper">
-        <div className="card_container">
-          <button disabled={dots === 4} onClick={() => setType("ROI")}>
-            ROI
-          </button>
-          <button onClick={() => setType("LOI")}>LOI</button>
-          <button
-            onClick={() => {
-              let ctx = document.getElementById("canvas").getContext("2d");
-              dots = 0;
-              activeIndex = -1;
-              finalROI = [];
-              isUpdate = false;
-              LOIClicks = 0;
-              setROICord([]);
-              setLOICord([]);
-              setType("ROI");
-              ctx.clearRect(0, 0, 640, 480);
+    <div>
+      <div className="canvas_container">
+        {console.log("ROICORD:", ROICord)}
+        {console.log("LOICORD:", LOICord)}
+        {console.log("COUNT:", Count)}
+        <div className="canvas_">
+          <p>canvas</p>
+          <p>Type: {Type}</p>
+          <canvas
+            id="canvas"
+            width="640px"
+            height="480px"
+            style={{ background: "gray", alignSelf: "center" }}
+            onClick={(e) => {
+              if (Type === "ROI") handleROI(e);
+              else handleLOI(e);
             }}
-          >
-            Clear
-          </button>
+          />
         </div>
-        <div className="loi_card">
-          {LOICord.map((item, idx) => (
-            <div key={"card__" + idx + 12}>
-              <p>LOI-{idx + 1}</p>
-              <input
-                type={"text"}
-                placeholder="Label"
-                value={item.label}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  const regex = /^\d{1,}(\.\d{0,50})?$/;
-                  if (value.match(regex) || value === "") {
+        <div className="card_container_wrapper">
+          <div className="card_container">
+            <button disabled={dots === 4} onClick={() => setType("ROI")}>
+              ROI
+            </button>
+            <button onClick={() => setType("LOI")}>LOI</button>
+            <button
+              onClick={() => {
+                let ctx = document.getElementById("canvas").getContext("2d");
+                dots = 0;
+                activeIndex = -1;
+                finalROI = [];
+                isUpdate = false;
+                LOIClicks = 0;
+                setROICord([]);
+                setLOICord([]);
+                setType("ROI");
+                ctx.clearRect(0, 0, 640, 480);
+              }}
+            >
+              Clear
+            </button>
+          </div>
+          <div className="loi_card">
+            {LOICord.map((item, idx) => (
+              <div key={"card__" + idx + 12}>
+                <p>LOI-{idx + 1}</p>
+                <input
+                  type={"text"}
+                  placeholder="Label"
+                  value={item.label}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const regex = /^\d{1,}(\.\d{0,50})?$/;
+                    if (value.match(regex) || value === "") {
+                      let _data = [...LOICord];
+                      _data[idx].label = e.target.value;
+                      setLOICord([..._data]);
+                    }
+                  }}
+                />
+                <select
+                  onChange={(e) => {
                     let _data = [...LOICord];
-                    _data[idx].label = e.target.value;
+                    _data[idx].type = e.target.value;
                     setLOICord([..._data]);
-                  }
-                }}
-              />
-              <select
-                onChange={(e) => {
-                  let _data = [...LOICord];
-                  _data[idx].type = e.target.value;
-                  setLOICord([..._data]);
-                }}
-                value={item.type}
-              >
-                <option value={"Latitude"}>Latitude</option>
-                <option value={"Longitude"}>Longitude</option>
-              </select>
-              <button
-                onClick={() => {
-                  // activeIndex -= 1;
-                  let _data = [...LOICord];
-                  _data.splice(idx, 1);
-                  setLOICord([..._data]);
-                  redrawCanvas(ROICord, _data);
-                }}
-              >
-                Remove
-              </button>
-              <button
-                onClick={() => {
-                  if (validateLOIData()) {
-                    return;
-                  }
-                  activeIndex = idx;
-                  console.log(idx);
-                  let _data = [...LOICord];
-                  _data[idx] = {
-                    ..._data[idx],
-                    x1: 0,
-                    x2: 0,
-                    y1: 0,
-                    y2: 0,
-                  };
-                  LOIClicks = 0;
-                  setLOICord([..._data]);
-                  redrawCanvas(ROICord, _data);
-                }}
-              >
-                Reset
-              </button>
-            </div>
-          ))}
-          <button className="add_loi" onClick={addNewLOI}>
-            Add New LOI
-          </button>
+                  }}
+                  value={item.type}
+                >
+                  <option value={"Latitude"}>Latitude</option>
+                  <option value={"Longitude"}>Longitude</option>
+                </select>
+                <button
+                  onClick={() => {
+                    // activeIndex -= 1;
+                    let _data = [...LOICord];
+                    _data.splice(idx, 1);
+                    setLOICord([..._data]);
+                    redrawCanvas(ROICord, _data);
+                  }}
+                >
+                  Remove
+                </button>
+                <button
+                  onClick={() => {
+                    if (validateLOIData()) {
+                      return;
+                    }
+                    activeIndex = idx;
+                    console.log(idx);
+                    let _data = [...LOICord];
+                    _data[idx] = {
+                      ..._data[idx],
+                      x1: 0,
+                      x2: 0,
+                      y1: 0,
+                      y2: 0,
+                    };
+                    LOIClicks = 0;
+                    setLOICord([..._data]);
+                    redrawCanvas(ROICord, _data);
+                  }}
+                >
+                  Reset
+                </button>
+              </div>
+            ))}
+            <button className="add_loi" onClick={addNewLOI}>
+              Add New LOI
+            </button>
+          </div>
         </div>
+        <button className="submit_btn" onClick={postData}>
+          Submit
+        </button>
       </div>
-      <button className="submit_btn" onClick={postData}>
-        Submit
-      </button>
+      <div style={{ marginTop: "5vw", paddingBottom: "5vw" }}>
+        <Scrollbars
+          autoHeight
+          autoHeightMax="50vh"
+          onScrollFrame={(values) => {
+            if (values.top === 1) {
+              setCount(Count + 15);
+            }
+          }}
+        >
+          {dummy.map((item) =>
+            item.images.map((items) => {
+              if (cnt < Count) {
+                cnt += 1;
+                return (
+                  <img
+                    style={{ margin: "0.5vw" }}
+                    src={items}
+                    width="215px"
+                    height="215px"
+                  />
+                );
+              }
+              return null;
+            })
+          )}
+        </Scrollbars>
+      </div>
     </div>
   );
 }
@@ -634,15 +666,117 @@ const dummy = [
   {
     label: "A",
     images: [
-      2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-      2, 2, 2, 2, 2, 2, 2,
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
     ],
   },
   {
     label: "B",
     images: [
-      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/300×300",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
+      "https://source.unsplash.com/random/200×200",
     ],
   },
 ];
