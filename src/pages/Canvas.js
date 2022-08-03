@@ -6,11 +6,13 @@ let _lastClick = [0, 0];
 let dots = 0;
 let finalROI = []; //only to pass it as param in INSIDE function
 let activeIndex = -1;
+let isUpdate = false;
 export default function Canvas() {
   const [Demo, setDemo] = useState(false);
   const [Rows, setRows] = useState(0);
   const [Type, setType] = useState("ROI");
   const [Columns, setColumns] = useState(0);
+  const [Counter, setCounter] = useState(40);
   const [ROICord, setROICord] = useState([]);
   const [LOICord, setLOICord] = useState([]);
 
@@ -158,7 +160,6 @@ export default function Canvas() {
       if (dots === 4) {
         //check useEffect
       } else if (dots > 1) {
-        console.log(dots - 2);
         drawROI([ROICord[dots - 2].x, ROICord[dots - 2].y], [x, y]);
       }
     }
@@ -318,31 +319,93 @@ export default function Canvas() {
     console.log(loiObj);
     console.log(body);
   };
+
+  const getData = () => {
+    // http://localhost:3000/camera/update/d3d3f4cab3ec4ee4a08e64dcebeb9ae0?service=person_tresspassing_detection
+    let _data = { ...apiData };
+    let ctx = document.getElementById("canvas").getContext("2d");
+    const authResult = new URLSearchParams(window.location.search);
+    const sType = authResult.get("service");
+    let _obj = [
+      {
+        x: _data[sType].roi1.roicords.x1,
+        y: _data[sType].roi1.roicords.y1,
+      },
+      {
+        x: _data[sType].roi1.roicords.x2,
+        y: _data[sType].roi1.roicords.y2,
+      },
+      {
+        x: _data[sType].roi1.roicords.x3,
+        y: _data[sType].roi1.roicords.y3,
+      },
+      {
+        x: _data[sType].roi1.roicords.x4,
+        y: _data[sType].roi1.roicords.y4,
+      },
+    ];
+    dots = 4;
+    isUpdate = true;
+    setROICord([..._obj]);
+    let loiCord = { ..._data[sType].roi1.loicord };
+    console.log(loiCord);
+    let _loiData = Object.keys(loiCord).map((item) => {
+      let obj = { ...loiCord[item] };
+      if (obj.label.includes("long")) {
+        obj.type = "Longitude";
+      } else {
+        obj.type = "Latitude";
+      }
+      obj.label = obj.label.split("-")[1];
+      ctx.beginPath();
+      ctx.moveTo(obj.x1, obj.y1);
+      ctx.lineTo(obj.x2, obj.y2, 6);
+      ctx.strokeStyle = "#ff2626";
+      ctx.stroke();
+      return obj;
+    });
+    setLOICord([..._loiData]);
+  };
   useEffect(() => {
     if (dots === 4) {
-      console.log("useeeffect");
+      // let ctx = document.getElementById("canvas").getContext("2d");
+      // ctx.clearRect(0, 0, 640, 480);
       setType("LOI");
+      drawROI([ROICord[0].x, ROICord[0].y], [ROICord[1].x, ROICord[1].y]);
+      drawROI([ROICord[1].x, ROICord[1].y], [ROICord[2].x, ROICord[2].y]);
       drawROI([ROICord[2].x, ROICord[2].y], [ROICord[3].x, ROICord[3].y]);
       drawROI([ROICord[3].x, ROICord[3].y], [ROICord[0].x, ROICord[0].y]);
-      activeIndex += 1;
-      console.log(activeIndex);
-      setLOICord((oldArray) => [
-        ...oldArray,
-        {
-          x1: 0,
-          x2: 0,
-          y1: 0,
-          y2: 0,
-          label: "",
-          type: "Latitude",
-        },
-      ]);
+      finalROI.length = 0;
+      finalROI.push([ROICord[0].x, ROICord[0].y]);
+      finalROI.push([ROICord[1].x, ROICord[1].y]);
+      finalROI.push([ROICord[2].x, ROICord[2].y]);
+      finalROI.push([ROICord[3].x, ROICord[3].y]);
+      if (!isUpdate) {
+        activeIndex += 1;
+        console.log(isUpdate);
+
+        setLOICord((oldArray) => [
+          ...oldArray,
+          {
+            x1: 0,
+            x2: 0,
+            y1: 0,
+            y2: 0,
+            label: "",
+            type: "Latitude",
+          },
+        ]);
+      }
     }
   }, [ROICord]);
 
   useEffect(() => {
-    drawROILOI();
-    setType("LOI");
+    // drawROILOI();
+    // setType("LOI");
+
+    getData();
+
+    // console.log(_ddata);
   }, []);
 
   return (
@@ -373,7 +436,10 @@ export default function Canvas() {
             onClick={() => {
               let ctx = document.getElementById("canvas").getContext("2d");
               dots = 0;
+              activeIndex = -1;
               finalROI = [];
+              isUpdate = false;
+              LOIClicks = 0;
               setROICord([]);
               setLOICord([]);
               setType("ROI");
@@ -501,3 +567,82 @@ const staticData = {
     // },
   ],
 };
+
+let apiData = {
+  safety: {
+    roi1: {
+      loicord: {
+        line1: {
+          label: "lat-423",
+          x1: 120,
+          x2: 539,
+          y1: 163,
+          y2: 158,
+        },
+        line2: {
+          label: "lat-234",
+          x1: 113,
+          x2: 538,
+          y1: 254,
+          y2: 253,
+        },
+        line3: {
+          label: "lat-23412",
+          x1: 103,
+          x2: 550,
+          y1: 333,
+          y2: 333,
+        },
+        line4: {
+          label: "lat-23",
+          x1: 224,
+          x2: 183,
+          y1: 78,
+          y2: 407,
+        },
+        line5: {
+          label: "lat-42",
+          x1: 341,
+          x2: 320,
+          y1: 77,
+          y2: 411,
+        },
+        line6: {
+          label: "lat-123",
+          x1: 447,
+          x2: 450,
+          y1: 77,
+          y2: 411,
+        },
+      },
+      roicords: {
+        x1: 129,
+        x2: 537,
+        x3: 560,
+        x4: 92,
+        y1: 74,
+        y2: 76,
+        y3: 418,
+        y4: 414,
+      },
+      roiName: "roi1",
+    },
+  },
+};
+
+const dummy = [
+  {
+    label: "A",
+    images: [
+      2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+      2, 2, 2, 2, 2, 2, 2,
+    ],
+  },
+  {
+    label: "B",
+    images: [
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    ],
+  },
+];
