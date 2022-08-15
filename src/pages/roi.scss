@@ -76,6 +76,9 @@ $desk: 100/1920;
       border: 2 * $desk + vw solid #013aa2;
       cursor: pointer;
     }
+    .all_selected {
+      background-color: #013aa2;
+    }
     .timeline_info {
       position: relative;
       height: 50 * $desk + vw;

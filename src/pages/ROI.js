@@ -7,6 +7,7 @@ let Services = servicess["Services"];
 let Limits = limits["details"]["Limitations"];
 let deepStreamLimit = Limits["Deepstream"];
 let usecaseLimit = Limits["Usecase"];
+let cameraLimit = Limits["Camera"];
 let isAllTimeSelected = false;
 let isAllUCSelected = [];
 let disabledServices = [];
@@ -35,12 +36,36 @@ export default function ROI() {
     }
   };
 
-  const timeslotMouseDown = (i) => {
-    let _selectedTimeSlot = _.cloneDeep(selectedTimeSlot);
+  const intersectionService = (
+    services_AI,
+    _activeAI,
+    item_serviceID,
+    idx,
+    data_
+  ) => {
+    let intersection = services_AI.filter((x) => !_activeAI.includes(x));
+    let add = _activeAI.length + intersection.length;
+    if (deepStreamLimit < add) {
+      return _.union(data_[idx].disabledService, [item_serviceID]);
+    } else {
+      let uniqueD = [...new Set(data_[idx].disabledService)];
+      var ucIndex = uniqueD.indexOf(item_serviceID);
+      if (ucIndex >= 0) {
+        uniqueD.splice(ucIndex, 1);
+        return uniqueD;
+      }
+    }
+  };
+  const timeslotMouseDown = (i, idx, selectedTimeSlot_) => {
+    let _selectedTimeSlot = selectedTimeSlot_
+      ? _.cloneDeep(selectedTimeSlot_)
+      : _.cloneDeep(selectedTimeSlot);
     let _data = _.cloneDeep(data);
     let _service = _.cloneDeep(Services);
-    let elePresent = _.includes(selectedTimeSlot, i);
-
+    let elePresent = _.includes(_selectedTimeSlot, i);
+    console.log(JSON.stringify(_selectedTimeSlot));
+    console.log(elePresent, i, idx);
+    // console.log(JSON.stringify(_data));
     // push/remove time from selectedTimeSlot array
     if (!elePresent) {
       _selectedTimeSlot.push(i);
@@ -59,23 +84,29 @@ export default function ROI() {
     }
 
     //disable Usecases which are out of limits
-    if (elePresent) {
+    if (!elePresent) {
+      if (!isCamerPresent) {
+        let popData = [];
+        Loop(_service, (serEle) => {
+          if (serEle.Dependent_services.AI.length > deepStreamLimit) {
+            popData.push(serEle.Service_id);
+          }
+        });
+        Loop(_data, (data_ele) => {
+          if (data_ele.slot === i) {
+            data_ele.disabledService = [...popData];
+          }
+        });
+        setData([..._data]);
+      } else {
+        console.table(_data);
+        cameraPresent(_data, i, idx);
+      }
     } else {
-      let popData = [];
-      Loop(_service, (serEle) => {
-        if (serEle.Dependent_services.AI.length > deepStreamLimit) {
-          popData.push(serEle.Service_id);
-        }
-      });
-      Loop(_data, (data_ele) => {
-        if (data_ele.slot === i) {
-          data_ele.disabledService = [...popData];
-        }
-      });
+      setData([..._data]);
     }
-    setData(_data);
-    setSelectedTimeSlot([..._selectedTimeSlot]);
     setMouseState(true);
+    setSelectedTimeSlot([..._selectedTimeSlot]);
   };
 
   const usecaseMouseDown = (
@@ -86,7 +117,6 @@ export default function ROI() {
   ) => {
     let _data = _.cloneDeep(data);
     let _service = _.cloneDeep(Service);
-    let dataUC = data_item.Usecases;
     let elePresent = _.includes(data_item.Usecases, service_item.Service_id);
 
     console.log(elePresent);
@@ -94,10 +124,6 @@ export default function ROI() {
       _data[data_index].Usecases.push(service_item.Service_id);
       _data[data_index].Usecases = [...new Set(_data[data_index].Usecases)];
       console.log(_data);
-      // const result = _.union(
-      //   _data[data_index].AI,
-      //   service_item.Dependent_services.AI
-      // );
       _data[data_index].AI = [
         ..._data[data_index].AI,
         ...service_item.Dependent_services.AI,
@@ -111,27 +137,30 @@ export default function ROI() {
       }
     } else {
       console.log("else");
+      //removing UC
       const ucIndex = _data[data_index].Usecases.indexOf(
         service_item.Service_id
       );
       _data[data_index].Usecases.splice(ucIndex, 1);
 
+      //removing AI
       Loop(service_item.Dependent_services.AI, (serEle) => {
-        let index = _data[data_index].AI.indexOf(serEle);
-        console.log(index);
-        if (index >= 0) {
-          _data[data_index].AI.splice(index, 1);
+        let aiIndex = _data[data_index].AI.indexOf(serEle);
+        console.log(aiIndex);
+        if (aiIndex >= 0) {
+          _data[data_index].AI.splice(aiIndex, 1);
         }
       });
 
+      //removing dependent if ANALYTICS
       if (service_item.Category === "Analytics") {
         let dArr = _data[data_index].Dependent;
         Loop(service_item.Dependent_services.Usecase, (u_ele) => {
           if (dArr.includes(u_ele)) {
-            let index = _data[data_index].Dependent.indexOf(u_ele);
-            console.log(index);
-            if (index >= 0) {
-              _data[data_index].Dependent.splice(index, 1);
+            let depIndex = _data[data_index].Dependent.indexOf(u_ele);
+            console.log(depIndex);
+            if (depIndex >= 0) {
+              _data[data_index].Dependent.splice(depIndex, 1);
             }
           }
         });
@@ -156,6 +185,16 @@ export default function ROI() {
       _data[data_index].Usecases
     );
     let unique_AI = [...new Set(_data[data_index].AI)];
+
+    if (isCamerPresent) {
+      unique_UC_Dependent = _.union(
+        unique_UC_Dependent,
+        _data[data_index].staticDependent,
+        _data[data_index].staticUC
+      );
+      unique_AI = _.union(unique_AI, _data[data_index].staticAI);
+    }
+
     console.log(unique_UC_Dependent);
     console.log(unique_AI);
     if (unique_UC_Dependent.length === usecaseLimit) {
@@ -194,11 +233,13 @@ export default function ROI() {
     let _data = _.cloneDeep(data_);
     let _service = _.cloneDeep(Service);
     let _usecases = _.cloneDeep(_data[data_index].Usecases);
-    let _AI = _data[data_index].AI;
     console.log(data_);
     Array.prototype.push.apply(_usecases, data_item.Dependent);
     console.log(_usecases);
-    // _usecases = [...new Set(_usecases)];
+    if (isCamerPresent) {
+      Array.prototype.push.apply(_usecases, data_item.staticUC);
+      Array.prototype.push.apply(_usecases, data_item.staticDependent);
+    }
     Loop(_service, (ele) => {
       if (!_usecases.includes(ele.Service_id)) {
         _data[data_index].disabledService.push(ele.Service_id);
@@ -225,6 +266,11 @@ export default function ROI() {
     let _AI = _.clone(_data[data_index].AI);
     console.log(_data);
 
+    if (isCamerPresent) {
+      _AI = _.union(_AI, _data[data_index].staticAI);
+    }
+    console.log(_AI);
+
     Loop(_service, (serv_ele) => {
       //checking if Services is not greater than DS Limit
       if (serv_ele.Dependent_services.AI.length <= deepStreamLimit) {
@@ -247,6 +293,7 @@ export default function ROI() {
             ];
           } else {
             console.log("ELSE2");
+            console.log(serv_ele.Service_id);
           }
           // console.log(serv_ele.Service_id);
         }
@@ -271,8 +318,11 @@ export default function ROI() {
     console.log("toggleUsecases()");
     let _data = _.cloneDeep(data_);
     let _service = _.cloneDeep(Service);
-    let _AI = _data[data_index].AI;
-    let unique_AI = _.union(_AI);
+    let unique_AI = _.union(_data[data_index].AI);
+
+    if (isCamerPresent) {
+      unique_AI = _.union(unique_AI, _data[data_index].staticAI);
+    }
     console.log(unique_AI);
     if (!unique_AI.length) {
       _data[data_index].AI.length = 0;
@@ -288,10 +338,12 @@ export default function ROI() {
     } else {
       let popData = [];
       Loop(_service, (serEle) => {
+        console.log(serEle.Dependent_services.AI, unique_AI);
         if (
           serEle.Dependent_services.AI.length + unique_AI.length >
           deepStreamLimit
         ) {
+          console.log(serEle.Service_id);
           popData.push(serEle.Service_id);
         } else {
           if (serEle.Category === "Analytics") {
@@ -320,13 +372,42 @@ export default function ROI() {
     let _apiData = { ...apiData };
     let apiDataKeys = Object.keys(_apiData);
     let cameraLength = 0;
+    let _data = _.cloneDeep(data);
+    let _service = _.cloneDeep(Service);
+
+    let _DisabledTS = [];
     for (let i = 0; i < apiDataKeys.length; i++) {
       if (_apiData[apiDataKeys[i]].global.Cameras.length) {
         cameraLength += 1;
+        Array.prototype.push.apply(
+          _data[i].staticUC,
+          _apiData[apiDataKeys[i]].global.Usecases
+        );
+        Array.prototype.push.apply(
+          _data[i].staticAI,
+          _apiData[apiDataKeys[i]].global.AI
+        );
+        Array.prototype.push.apply(
+          _data[i].staticDependent,
+          _apiData[apiDataKeys[i]].global.Dependent
+        );
+        if (_apiData[apiDataKeys[i]].global.Cameras.length >= cameraLimit) {
+          _DisabledTS.push(apiDataKeys[i]);
+        }
       }
     }
+    console.log(_data);
     if (cameraLength > 0) {
+      LoopDataService(
+        _data,
+        _service,
+        (dataEle, dataIndex, servEle, serIndex) => {
+          dataEle.disabledService.push(servEle.Service_id);
+        }
+      );
+      setData([..._data]);
       setisCamerPresent(true);
+      setDisabledTS([..._DisabledTS]);
       console.log("CAMERA IS PRESENT!");
     } else {
       cameraNotPresent();
@@ -353,12 +434,113 @@ export default function ROI() {
 
     setData([..._data]);
   };
+
+  const cameraPresent = (data_, slot, idx) => {
+    console.log("cameraPresent()");
+    console.table(data_);
+    let _data = _.cloneDeep(data_);
+    let _service = [...Service];
+    let _uniqueUCnD = _.union(_data[idx].staticUC, _data[idx].staticDependent);
+    let _activeAI = [..._data[idx].staticAI];
+    console.log(_uniqueUCnD, _activeAI);
+    console.log(_uniqueUCnD.length, usecaseLimit);
+    if (_uniqueUCnD.length >= usecaseLimit) {
+      Loop(_service, (item) => {
+        //disable other usecase and DS
+        if (!_uniqueUCnD.includes(item.Service_id)) {
+          _data[idx].disabledService.push(item.Service_id);
+        }
+      });
+    } else {
+      if (deepStreamLimit === _activeAI.length) {
+        console.log("deepStreamLimit === _activeAI");
+      } else {
+        Loop(_service, (item) => {
+          if (item.Dependent_services.AI.length <= deepStreamLimit) {
+            let result = [];
+            Loop(item.Dependent_services.AI, (ele) => {
+              Loop(_activeAI, (ele2) => {
+                if (ele2 === ele) result.push(true);
+                else result.push(false);
+              });
+            });
+            if (!result.includes(true)) {
+              if (item.Category === "Analytics") {
+                //console.log("CATEGORY IS ANALYTIC " + item.Service_id);
+                // this.toggleAnalytics2(data_ele, item);
+              } else {
+                _data[idx].disabledService = [
+                  ...intersectionService(
+                    item.Dependent_services.AI,
+                    _activeAI,
+                    item.Service_id,
+                    idx,
+                    _data
+                  ),
+                ];
+              }
+            } else {
+              console.log("object2");
+
+              if (item.Category === "Analytics") {
+                //console.log("CATEGORY IS ANALYTIC " + item.Service_id);
+                // this.toggleAnalytics2(data_ele, item);
+              } else {
+                _data[idx].disabledService = [
+                  ...intersectionService(
+                    item.Dependent_services.AI,
+                    _activeAI,
+                    item.Service_id,
+                    idx,
+                    _data
+                  ),
+                ];
+              }
+            }
+          } else {
+            _data[idx].disabledService = [
+              ..._.union(_data[idx].disabledService, [item.Service_id]),
+            ];
+            // _data[idx].disabledService.push(item.Service_id);
+            // _data[idx].disabledService = [
+            //   ...new Set(_data[idx].disabledService),
+            // ];
+          }
+        });
+      }
+    }
+    console.table(_data);
+    setData([..._data]);
+  };
+
+  const toggleTimeSlot = async () => {
+    let _data = _.cloneDeep(data);
+    let _selectedTimeSlot = _.cloneDeep(selectedTimeSlot);
+    if (isCamerPresent) {
+      if (isAllTimeSelected) {
+        _selectedTimeSlot = [];
+        for (let i = 0; i < time.length; i++) {
+          setSelectedTimeSlot([..._selectedTimeSlot]);
+          // await this.setState({ selectedTimeSlot: _selectedTimeSlot });
+          if (!DisabledTS.includes(time[i])) {
+            timeslotMouseDown(time[i], i, _selectedTimeSlot);
+            _selectedTimeSlot.push(time[i]);
+          }
+        }
+        // _selectedTimeSlot = _.union(_selectedTimeSlot);
+      }
+    } else {
+    }
+    console.log(_selectedTimeSlot);
+    // setSelectedTimeSlot([..._selectedTimeSlot]);
+  };
   useEffect(() => {
     onLoad();
   }, []);
 
   return (
     <div className="roiContainer">
+      {console.log(selectedTimeSlot)}
       <div className="containerr">
         <div className="timeline-header">
           <p className="h">Time (24 Hrs)</p>
@@ -415,25 +597,20 @@ export default function ROI() {
             className={
               isAllTimeSelected ? "select_all all_selected" : "select_all"
             }
-            //   style={{
-            //     backgroundColor: _.isEqual(
-            //       this.state.DisabledTS,
-            //       this.state.time
-            //     )
-            //       ? "gray"
-            //       : null,
-            //   }}
+            style={{
+              backgroundColor: _.isEqual(DisabledTS, time) ? "gray" : null,
+            }}
             onMouseEnter={() => setMouseState(false)}
             onMouseLeave={() => setMouseState(false)}
             onClick={() => {
-              // if (!_.isEqual(this.state.DisabledTS, this.state.time)) {
-              //   isAllTimeSelected = !isAllTimeSelected;
-              //   this.toggleCameraSlot();
-              // }
+              if (!_.isEqual(DisabledTS, time)) {
+                isAllTimeSelected = !isAllTimeSelected;
+                toggleTimeSlot();
+              }
             }}
           />
           <div className="timeline" onMouseLeave={() => setMouseState(false)}>
-            {data.map((item) => (
+            {data.map((item, idx) => (
               <div
                 key={item.slot + "1020"}
                 className={
@@ -441,24 +618,22 @@ export default function ROI() {
                     ? "child activeslot"
                     : "child"
                 }
-                // style={{
-                //   backgroundColor: this.state.DisabledTS.includes(item.slot)
-                //     ? "gray"
-                //     : "",
-                //   cursor: this.state.DisabledTS.includes(item.slot)
-                //     ? "not-allowed"
-                //     : "default",
-                // }}
+                style={{
+                  backgroundColor: DisabledTS.includes(item.slot) ? "gray" : "",
+                  cursor: DisabledTS.includes(item.slot)
+                    ? "not-allowed"
+                    : "default",
+                }}
                 onMouseDown={() => {
-                  //   if (!this.state.DisabledTS.includes(item.slot)) {
-                  timeslotMouseDown(item.slot);
-                  //   }
+                  if (!DisabledTS.includes(item.slot)) {
+                    timeslotMouseDown(item.slot, idx);
+                  }
                 }}
                 onMouseEnter={() => {
                   if (mouseState) {
-                    // if (!this.state.DisabledTS.includes(item.slot)) {
-                    timeslotMouseDown(item.slot);
-                    // }
+                    if (!DisabledTS.includes(item.slot)) {
+                      timeslotMouseDown(item.slot, idx);
+                    }
                   }
                 }}
                 onMouseUp={() => setMouseState(false)}
@@ -537,6 +712,12 @@ export default function ROI() {
                           )
                         ) {
                           if (isCamerPresent) {
+                            usecaseMouseDown(
+                              item,
+                              index,
+                              service_item,
+                              service_index
+                            );
                           } else {
                             usecaseMouseDown(
                               item,
@@ -764,52 +945,67 @@ const _data = [
 const _time = [
   "0-2",
   "2-4",
-  "4-6",
-  "6-8",
-  "8-10",
-  "10-12",
-  "12-14",
-  "14-16",
-  "16-18",
-  "18-20",
-  "20-22",
-  "22-24",
+  // "4-6",
+  // "6-8",
+  // "8-10",
+  // "10-12",
+  // "12-14",
+  // "14-16",
+  // "16-18",
+  // "18-20",
+  // "20-22",
+  // "22-24",
 ];
 
 const _apiData = {
-  // "0-2": {
-  //   global: {
-  //     Cameras: ["1"],
-  //     Usecases: ["Weapon_Detection"],
-  //     Dependent: [],
-  //     AI: ["Weapon_Detection_AI"],
-  //   },
-  //   local: {
-  //     1: {
-  //       Usecases: ["Weapon_Detection"],
-  //       AI: ["Weapon_Detection_AI"],
-  //       Dependent: [],
-  //     },
-  //   },
-  // },
   "0-2": {
     global: {
-      Cameras: [],
-      Usecases: [],
+      Cameras: ["1"],
+      Usecases: ["Weapon_Detection"],
       Dependent: [],
-      AI: [],
+      AI: ["Weapon_Detection_AI"],
     },
-    local: {},
+    local: {
+      1: {
+        Usecases: ["Weapon_Detection"],
+        AI: ["Weapon_Detection_AI"],
+        Dependent: [],
+      },
+    },
   },
   "2-4": {
     global: {
-      Cameras: [],
-      Usecases: [],
+      Cameras: ["1"],
+      Usecases: ["Weapon_Detection"],
       Dependent: [],
-      AI: [],
+      AI: ["Weapon_Detection_AI"],
     },
-    local: {},
+    local: {
+      1: {
+        Usecases: ["Weapon_Detection"],
+        AI: ["Weapon_Detection_AI"],
+        Dependent: [],
+      },
+    },
   },
+  // "0-2": {
+  //   global: {
+  //     Cameras: [],
+  //     Usecases: [],
+  //     Dependent: [],
+  //     AI: [],
+  //   },
+  //   local: {},
+  // },
+  // "2-4": {
+  //   global: {
+  //     Cameras: [],
+  //     Usecases: [],
+  //     Dependent: [],
+  //     AI: [],
+  //   },
+  //   local: {},
+  // },
   "4-6": {
     global: {
       Cameras: [],
