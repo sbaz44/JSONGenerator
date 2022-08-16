@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { Component } from "react";
 import "./roi.scss";
 import limits from "./limits.json";
 import servicess from "./services.json";
@@ -11,24 +11,27 @@ let cameraLimit = Limits["Camera"];
 let isAllTimeSelected = false;
 let isAllUCSelected = [];
 let disabledServices = [];
-export default function ROI() {
-  const [data, setData] = useState([..._data]);
-  const [apiData, setApiData] = useState({ ..._apiData });
-  const [time, setTime] = useState([..._time]);
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState([]);
-  const [Service, setService] = useState([...Services]);
-  const [mouseState, setMouseState] = useState(false);
-  const [DisabledTS, setDisabledTS] = useState([]);
-  const [isCamerPresent, setisCamerPresent] = useState(false);
+
+export default class ROI extends Component {
+  state = {
+    data: [..._data],
+    apiData: { ..._apiData },
+    time: [..._time],
+    selectedTimeSlot: [],
+    Service: [...Services],
+    mouseState: false,
+    DisabledTS: [],
+    isCamerPresent: false,
+  };
 
   //reusable functions
-  const Loop = (arr, callback) => {
+  Loop = (arr, callback) => {
     for (let element of arr) {
       callback(element);
     }
   };
 
-  const LoopDataService = (data_, service_, callback) => {
+  LoopDataService = (data_, service_, callback) => {
     for (const [data_index, data_value] of data_.entries()) {
       for (const [service_index, service_value] of service_.entries()) {
         callback(data_value, data_index, service_value, service_index);
@@ -36,7 +39,7 @@ export default function ROI() {
     }
   };
 
-  const intersectionService = (
+  intersectionService = (
     services_AI,
     _activeAI,
     item_serviceID,
@@ -52,16 +55,19 @@ export default function ROI() {
       var ucIndex = uniqueD.indexOf(item_serviceID);
       if (ucIndex >= 0) {
         uniqueD.splice(ucIndex, 1);
+        console.table(uniqueD);
         return uniqueD;
       }
     }
   };
-  const timeslotMouseDown = (i, idx, selectedTimeSlot_) => {
+
+  timeslotMouseDown = (i, idx, selectedTimeSlot_) => {
+    const { selectedTimeSlot, data, Service, isCamerPresent } = this.state;
     let _selectedTimeSlot = selectedTimeSlot_
       ? _.cloneDeep(selectedTimeSlot_)
       : _.cloneDeep(selectedTimeSlot);
     let _data = _.cloneDeep(data);
-    let _service = _.cloneDeep(Services);
+    let _service = _.cloneDeep(Service);
     let elePresent = _.includes(_selectedTimeSlot, i);
     console.log(JSON.stringify(_selectedTimeSlot));
     console.log(elePresent, i, idx);
@@ -71,8 +77,8 @@ export default function ROI() {
       _selectedTimeSlot.push(i);
     } else {
       _selectedTimeSlot = _selectedTimeSlot.filter((item) => item != i);
-      Loop(_data, (data_ele) => {
-        Loop(_service, (_service_ele) => {
+      this.Loop(_data, (data_ele) => {
+        this.Loop(_service, (_service_ele) => {
           if (data_ele.slot === i) {
             data_ele.disabledService.push(_service_ele.Service_id);
             data_ele.AI.length = 0;
@@ -87,48 +93,50 @@ export default function ROI() {
     if (!elePresent) {
       if (!isCamerPresent) {
         let popData = [];
-        Loop(_service, (serEle) => {
+        this.Loop(_service, (serEle) => {
           if (serEle.Dependent_services.AI.length > deepStreamLimit) {
             popData.push(serEle.Service_id);
           }
         });
-        Loop(_data, (data_ele) => {
+        this.Loop(_data, (data_ele) => {
           if (data_ele.slot === i) {
             data_ele.disabledService = [...popData];
           }
         });
-        setData([..._data]);
+        this.setState({
+          data: [..._data],
+        });
       } else {
         console.table(_data);
-        cameraPresent(_data, i, idx);
+        this.cameraPresent(_data, i, idx);
       }
     } else {
-      setData([..._data]);
+      this.setState({
+        data: [..._data],
+      });
     }
-    setMouseState(true);
-    setSelectedTimeSlot([..._selectedTimeSlot]);
+    this.setState({
+      mouseState: true,
+      selectedTimeSlot: [..._selectedTimeSlot],
+    });
   };
 
-  const usecaseMouseDown = (
-    data_item,
-    data_index,
-    service_item,
-    service_index
-  ) => {
+  usecaseMouseDown = (data_item, data_index, service_item, service_index) => {
+    const { data } = this.state;
     let _data = _.cloneDeep(data);
-    let _service = _.cloneDeep(Service);
+    // let _service = _.cloneDeep(Service);
     let elePresent = _.includes(data_item.Usecases, service_item.Service_id);
 
     console.log(elePresent);
     if (!elePresent) {
       _data[data_index].Usecases.push(service_item.Service_id);
       _data[data_index].Usecases = [...new Set(_data[data_index].Usecases)];
-      console.log(_data);
       _data[data_index].AI = [
         ..._data[data_index].AI,
         ...service_item.Dependent_services.AI,
       ];
       if (service_item.Category === "Analytics") {
+        console.log("first");
         const _res = _.union(
           _data[data_index].Dependent,
           service_item.Dependent_services.Usecase
@@ -144,7 +152,7 @@ export default function ROI() {
       _data[data_index].Usecases.splice(ucIndex, 1);
 
       //removing AI
-      Loop(service_item.Dependent_services.AI, (serEle) => {
+      this.Loop(service_item.Dependent_services.AI, (serEle) => {
         let aiIndex = _data[data_index].AI.indexOf(serEle);
         console.log(aiIndex);
         if (aiIndex >= 0) {
@@ -155,7 +163,7 @@ export default function ROI() {
       //removing dependent if ANALYTICS
       if (service_item.Category === "Analytics") {
         let dArr = _data[data_index].Dependent;
-        Loop(service_item.Dependent_services.Usecase, (u_ele) => {
+        this.Loop(service_item.Dependent_services.Usecase, (u_ele) => {
           if (dArr.includes(u_ele)) {
             let depIndex = _data[data_index].Dependent.indexOf(u_ele);
             console.log(depIndex);
@@ -166,19 +174,29 @@ export default function ROI() {
         });
       }
     }
-    console.log(_data);
-    setData([..._data]);
-    setMouseState(true);
-    verifyLimits(data_item, data_index, service_item, service_index, _data);
-  };
+    console.table(_data);
+    this.setState({
+      data: [..._data],
+      mouseState: true,
+    });
 
-  const verifyLimits = (
+    this.verifyLimits(
+      data_item,
+      data_index,
+      service_item,
+      service_index,
+      _data
+    );
+  };
+  verifyLimits = (
     data_item,
     data_index,
     service_item,
     service_index,
     data_
   ) => {
+    const { isCamerPresent } = this.state;
+
     let _data = _.cloneDeep(data_);
     let unique_UC_Dependent = _.union(
       _data[data_index].Dependent,
@@ -199,7 +217,7 @@ export default function ROI() {
     console.log(unique_AI);
     if (unique_UC_Dependent.length === usecaseLimit) {
       console.log("Usecase limit reached");
-      usecaseLimitReached(
+      this.usecaseLimitReached(
         data_item,
         data_index,
         service_item,
@@ -208,7 +226,7 @@ export default function ROI() {
       );
     } else if (unique_AI.length === deepStreamLimit) {
       console.log("DS limit reached");
-      deepstreamLimitReached(
+      this.deepstreamLimitReached(
         data_item,
         data_index,
         service_item,
@@ -218,11 +236,17 @@ export default function ROI() {
     } else {
       console.log(_data);
       console.log("verifyLimits ELSE");
-      toggleUsecases(data_item, data_index, service_item, service_index, data_);
+      this.toggleUsecases(
+        data_item,
+        data_index,
+        service_item,
+        service_index,
+        data_
+      );
     }
   };
 
-  const usecaseLimitReached = (
+  usecaseLimitReached = (
     data_item,
     data_index,
     service_item,
@@ -230,6 +254,8 @@ export default function ROI() {
     data_
   ) => {
     console.log("usecaseLimitReached()");
+    const { selectedTimeSlot, data, Service, isCamerPresent } = this.state;
+
     let _data = _.cloneDeep(data_);
     let _service = _.cloneDeep(Service);
     let _usecases = _.cloneDeep(_data[data_index].Usecases);
@@ -240,7 +266,7 @@ export default function ROI() {
       Array.prototype.push.apply(_usecases, data_item.staticUC);
       Array.prototype.push.apply(_usecases, data_item.staticDependent);
     }
-    Loop(_service, (ele) => {
+    this.Loop(_service, (ele) => {
       if (!_usecases.includes(ele.Service_id)) {
         _data[data_index].disabledService.push(ele.Service_id);
       }
@@ -250,16 +276,18 @@ export default function ROI() {
     ];
     _data[data_index].Usecases = [...new Set(_data[data_index].Usecases)];
     console.log(_data);
-    setData([..._data]);
+    this.setState({ data: [..._data] });
   };
 
-  const deepstreamLimitReached = (
+  deepstreamLimitReached = (
     data_item,
     data_index,
     service_item,
     service_index,
     data_
   ) => {
+    const { selectedTimeSlot, data, Service, isCamerPresent } = this.state;
+
     console.log("deepstreamLimitReached()");
     let _data = _.cloneDeep(data_);
     let _service = _.cloneDeep(Service);
@@ -271,7 +299,7 @@ export default function ROI() {
     }
     console.log(_AI);
 
-    Loop(_service, (serv_ele) => {
+    this.Loop(_service, (serv_ele) => {
       //checking if Services is not greater than DS Limit
       if (serv_ele.Dependent_services.AI.length <= deepStreamLimit) {
         let arr = _.union(_AI, serv_ele.Dependent_services.AI);
@@ -305,16 +333,18 @@ export default function ROI() {
       }
     });
     console.log(_data);
-    setData([..._data]);
+    this.setState({ data: [..._data] });
   };
 
-  const toggleUsecases = (
+  toggleUsecases = (
     data_item,
     data_index,
     service_item,
     service_index,
     data_
   ) => {
+    const { selectedTimeSlot, data, Service, isCamerPresent } = this.state;
+
     console.log("toggleUsecases()");
     let _data = _.cloneDeep(data_);
     let _service = _.cloneDeep(Service);
@@ -329,7 +359,7 @@ export default function ROI() {
       _data[data_index].Dependent.length = 0;
       _data[data_index].Usecases.length = 0;
       let popData = [];
-      Loop(_service, (serEle) => {
+      this.Loop(_service, (serEle) => {
         if (serEle.Dependent_services.AI.length > deepStreamLimit) {
           popData.push(serEle.Service_id);
         }
@@ -337,7 +367,7 @@ export default function ROI() {
       _data[data_index].disabledService = [...popData];
     } else {
       let popData = [];
-      Loop(_service, (serEle) => {
+      this.Loop(_service, (serEle) => {
         console.log(serEle.Dependent_services.AI, unique_AI);
         if (
           serEle.Dependent_services.AI.length + unique_AI.length >
@@ -365,10 +395,11 @@ export default function ROI() {
       _data[data_index].disabledService
     );
     console.log(_data);
-    setData([..._data]);
+    this.setState({ data: [..._data] });
   };
 
-  const onLoad = () => {
+  onLoad = () => {
+    const { apiData, data, Service, isCamerPresent } = this.state;
     let _apiData = { ...apiData };
     let apiDataKeys = Object.keys(_apiData);
     let cameraLength = 0;
@@ -398,54 +429,57 @@ export default function ROI() {
     }
     console.log(_data);
     if (cameraLength > 0) {
-      LoopDataService(
+      this.LoopDataService(
         _data,
         _service,
         (dataEle, dataIndex, servEle, serIndex) => {
           dataEle.disabledService.push(servEle.Service_id);
         }
       );
-      setData([..._data]);
-      setisCamerPresent(true);
-      setDisabledTS([..._DisabledTS]);
+      this.setState({
+        data: [..._data],
+        isCamerPresent: true,
+        DisabledTS: [..._DisabledTS],
+      });
       console.log("CAMERA IS PRESENT!");
     } else {
-      cameraNotPresent();
+      this.cameraNotPresent();
       console.log("CAMERA IS NOT PRESENT!");
     }
   };
 
-  const cameraNotPresent = () => {
+  cameraNotPresent = () => {
     console.log("cameraNotPresent()");
-    let _data = _.cloneDeep(data);
-    let _service = _.cloneDeep(Service);
+    let _data = _.cloneDeep(this.state.data);
+    let _service = _.cloneDeep(this.state.Service);
     for (let servEle of _service) {
       isAllUCSelected.push(false);
       disabledServices.push(servEle.Service_id);
     }
 
-    LoopDataService(
+    this.LoopDataService(
       _data,
       _service,
       (dataEle, dataIndex, servEle, serIndex) => {
         dataEle.disabledService.push(servEle.Service_id);
       }
     );
-
-    setData([..._data]);
+    this.setState({
+      data: [..._data],
+    });
   };
-
-  const cameraPresent = (data_, slot, idx) => {
+  cameraPresent = (data_, slot, idx) => {
     console.log("cameraPresent()");
     console.table(data_);
+
     let _data = _.cloneDeep(data_);
-    let _service = [...Service];
+    let _service = [...this.state.Service];
     let _uniqueUCnD = _.union(_data[idx].staticUC, _data[idx].staticDependent);
     let _activeAI = [..._data[idx].staticAI];
     console.log(_uniqueUCnD, _activeAI);
     console.log(_uniqueUCnD.length, usecaseLimit);
     if (_uniqueUCnD.length >= usecaseLimit) {
-      Loop(_service, (item) => {
+      this.Loop(_service, (item) => {
         //disable other usecase and DS
         if (!_uniqueUCnD.includes(item.Service_id)) {
           _data[idx].disabledService.push(item.Service_id);
@@ -455,11 +489,11 @@ export default function ROI() {
       if (deepStreamLimit === _activeAI.length) {
         console.log("deepStreamLimit === _activeAI");
       } else {
-        Loop(_service, (item) => {
+        this.Loop(_service, (item) => {
           if (item.Dependent_services.AI.length <= deepStreamLimit) {
             let result = [];
-            Loop(item.Dependent_services.AI, (ele) => {
-              Loop(_activeAI, (ele2) => {
+            this.Loop(item.Dependent_services.AI, (ele) => {
+              this.Loop(_activeAI, (ele2) => {
                 if (ele2 === ele) result.push(true);
                 else result.push(false);
               });
@@ -470,7 +504,7 @@ export default function ROI() {
                 // this.toggleAnalytics2(data_ele, item);
               } else {
                 _data[idx].disabledService = [
-                  ...intersectionService(
+                  ...this.intersectionService(
                     item.Dependent_services.AI,
                     _activeAI,
                     item.Service_id,
@@ -487,7 +521,7 @@ export default function ROI() {
                 // this.toggleAnalytics2(data_ele, item);
               } else {
                 _data[idx].disabledService = [
-                  ...intersectionService(
+                  ...this.intersectionService(
                     item.Dependent_services.AI,
                     _activeAI,
                     item.Service_id,
@@ -501,29 +535,27 @@ export default function ROI() {
             _data[idx].disabledService = [
               ..._.union(_data[idx].disabledService, [item.Service_id]),
             ];
-            // _data[idx].disabledService.push(item.Service_id);
-            // _data[idx].disabledService = [
-            //   ...new Set(_data[idx].disabledService),
-            // ];
           }
         });
       }
     }
     console.table(_data);
-    setData([..._data]);
+    this.setState({
+      data: [..._data],
+    });
   };
 
-  const toggleTimeSlot = async () => {
-    let _data = _.cloneDeep(data);
-    let _selectedTimeSlot = _.cloneDeep(selectedTimeSlot);
-    if (isCamerPresent) {
+  toggleTimeSlot = async () => {
+    const { time } = this.state;
+    let _data = _.cloneDeep(this.state.data);
+    let _selectedTimeSlot = _.cloneDeep(this.state.selectedTimeSlot);
+    if (this.state.isCamerPresent) {
       if (isAllTimeSelected) {
         _selectedTimeSlot = [];
         for (let i = 0; i < time.length; i++) {
-          setSelectedTimeSlot([..._selectedTimeSlot]);
-          // await this.setState({ selectedTimeSlot: _selectedTimeSlot });
-          if (!DisabledTS.includes(time[i])) {
-            timeslotMouseDown(time[i], i, _selectedTimeSlot);
+          await this.setState({ selectedTimeSlot: _selectedTimeSlot });
+          if (!this.state.DisabledTS.includes(time[i])) {
+            this.timeslotMouseDown(time[i], i, _selectedTimeSlot);
             _selectedTimeSlot.push(time[i]);
           }
         }
@@ -534,289 +566,304 @@ export default function ROI() {
     console.log(_selectedTimeSlot);
     // setSelectedTimeSlot([..._selectedTimeSlot]);
   };
-  useEffect(() => {
-    onLoad();
-  }, []);
 
-  return (
-    <div className="roiContainer">
-      {console.log(selectedTimeSlot)}
-      <div className="containerr">
-        <div className="timeline-header">
-          <p className="h">Time (24 Hrs)</p>
-          <div className="timeline">
-            <div className="time">
-              <p>0</p>
-            </div>
-            <div className="time">
-              <p>2</p>
-            </div>
-            <div className="time">
-              <p>4</p>
-            </div>
-            <div className="time">
-              <p>6</p>
-            </div>
-            <div className="time">
-              <p>8</p>
-            </div>
-            <div className="time">
-              <p>10</p>
-            </div>
-            <div className="time">
-              <p>12</p>
-            </div>
-            <div className="time">
-              <p>14</p>
-            </div>
-            <div className="time">
-              <p>16</p>
-            </div>
-            <div className="time">
-              <p>18</p>
-            </div>
-            <div className="time">
-              <p>20</p>
-            </div>
-            <div className="time">
-              <p>22</p>
-            </div>
-            <div className="time">
-              <span>24</span>
-            </div>
-          </div>
-        </div>
-        <div className="timeline_info">
-          <p className="select_text">Select All</p>
-          <p className="drag_text">Drag & Select Time Range</p>
-          <p className="configure_text">Configure</p>
-        </div>
-        <div className="timeline-header header_adjust">
-          <p className="h">Activate Camera Time</p>
-          <div
-            className={
-              isAllTimeSelected ? "select_all all_selected" : "select_all"
-            }
-            style={{
-              backgroundColor: _.isEqual(DisabledTS, time) ? "gray" : null,
-            }}
-            onMouseEnter={() => setMouseState(false)}
-            onMouseLeave={() => setMouseState(false)}
-            onClick={() => {
-              if (!_.isEqual(DisabledTS, time)) {
-                isAllTimeSelected = !isAllTimeSelected;
-                toggleTimeSlot();
-              }
-            }}
-          />
-          <div className="timeline" onMouseLeave={() => setMouseState(false)}>
-            {data.map((item, idx) => (
-              <div
-                key={item.slot + "1020"}
-                className={
-                  selectedTimeSlot.includes(item.slot)
-                    ? "child activeslot"
-                    : "child"
-                }
-                style={{
-                  backgroundColor: DisabledTS.includes(item.slot) ? "gray" : "",
-                  cursor: DisabledTS.includes(item.slot)
-                    ? "not-allowed"
-                    : "default",
-                }}
-                onMouseDown={() => {
-                  if (!DisabledTS.includes(item.slot)) {
-                    timeslotMouseDown(item.slot, idx);
-                  }
-                }}
-                onMouseEnter={() => {
-                  if (mouseState) {
-                    if (!DisabledTS.includes(item.slot)) {
-                      timeslotMouseDown(item.slot, idx);
-                    }
-                  }
-                }}
-                onMouseUp={() => setMouseState(false)}
-              >
-                <div className="circle" />
+  componentDidMount() {
+    this.onLoad();
+  }
+  render() {
+    const {
+      data,
+      mouseState,
+      DisabledTS,
+      time,
+      Service,
+      selectedTimeSlot,
+      isCamerPresent,
+    } = this.state;
+    return (
+      <div className="roiContainer">
+        <div className="containerr">
+          <div className="timeline-header">
+            <p className="h">Time (24 Hrs)</p>
+            <div className="timeline">
+              <div className="time">
+                <p>0</p>
               </div>
-            ))}
-            <div className="circle2 c_adjust" />
+              <div className="time">
+                <p>2</p>
+              </div>
+              <div className="time">
+                <p>4</p>
+              </div>
+              <div className="time">
+                <p>6</p>
+              </div>
+              <div className="time">
+                <p>8</p>
+              </div>
+              <div className="time">
+                <p>10</p>
+              </div>
+              <div className="time">
+                <p>12</p>
+              </div>
+              <div className="time">
+                <p>14</p>
+              </div>
+              <div className="time">
+                <p>16</p>
+              </div>
+              <div className="time">
+                <p>18</p>
+              </div>
+              <div className="time">
+                <p>20</p>
+              </div>
+              <div className="time">
+                <p>22</p>
+              </div>
+              <div className="time">
+                <span>24</span>
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="data-container">
-          <h1>Apps</h1>
-          {/* <Scrollbars autoHeight autoHeightMax="49vh"> */}
-          <div className="app_fixed">
-            {Service.map((service_item, service_index) => (
-              <div className="flex" key={service_item.Service_id}>
-                <h4 className="name">
-                  {service_index + 1}{" "}
-                  {service_item.Service_name.replaceAll("_", " ")}
-                </h4>
+          <div className="timeline_info">
+            <p className="select_text">Select All</p>
+            <p className="drag_text">Drag & Select Time Range</p>
+            <p className="configure_text">Configure</p>
+          </div>
+          <div className="timeline-header header_adjust">
+            <p className="h">Activate Camera Time</p>
+            <div
+              className={
+                isAllTimeSelected ? "select_all all_selected" : "select_all"
+              }
+              style={{
+                backgroundColor: _.isEqual(DisabledTS, time) ? "gray" : null,
+              }}
+              onMouseEnter={() => this.setState({ mouseState: false })}
+              onMouseLeave={() => this.setState({ mouseState: false })}
+              onClick={() => {
+                if (!_.isEqual(DisabledTS, time)) {
+                  isAllTimeSelected = !isAllTimeSelected;
+                  this.toggleTimeSlot();
+                }
+              }}
+            />
+            <div
+              className="timeline"
+              onMouseLeave={() => this.setState({ mouseState: false })}
+            >
+              {data.map((item, idx) => (
                 <div
-                  className="select_all"
-                  //   className={
-                  //     isAllUCSelected[service_index]
-                  //       ? "select_all all_selected"
-                  //       : "select_all"
-                  //   }
-                  onMouseEnter={() => setMouseState(false)}
-                  onMouseLeave={() => setMouseState(false)}
-                  //   style={{
-                  //     backgroundColor: disabledServices.includes(
-                  //       service_item.Service_id
-                  //     )
-                  //       ? "gray"
-                  //       : null,
-                  //     cursor: disabledServices.includes(service_item.Service_id)
-                  //       ? "not-allowed"
-                  //       : "pointer",
-                  //   }}
-                  onClick={() => {
-                    // if (selectedTimeSlot.length !== 0) {
-                    //   if (!disabledServices.includes(service_item.Service_id)) {
-                    //     isAllUCSelected[service_index] =
-                    //       !isAllUCSelected[service_index];
-                    //     this.toggleUCSlot(service_item, service_index);
-                    //   }
-                    // }
+                  key={item.slot + "1020"}
+                  className={
+                    selectedTimeSlot.includes(item.slot)
+                      ? "child activeslot"
+                      : "child"
+                  }
+                  style={{
+                    backgroundColor: DisabledTS.includes(item.slot)
+                      ? "gray"
+                      : "",
+                    cursor: DisabledTS.includes(item.slot)
+                      ? "not-allowed"
+                      : "default",
                   }}
-                />
-                <div
-                  className="dummy"
-                  onMouseLeave={() => setMouseState(false)}
-                  onMouseEnter={() => setMouseState(false)}
-                >
-                  {data.map((item, index) => (
-                    <div
-                      key={item.slot + "2"}
-                      className={
-                        item.Usecases.includes(service_item.Service_id)
-                          ? "child activeslot"
-                          : "child"
+                  onMouseDown={() => {
+                    if (!DisabledTS.includes(item.slot)) {
+                      this.timeslotMouseDown(item.slot, idx);
+                    }
+                  }}
+                  onMouseEnter={() => {
+                    if (mouseState) {
+                      if (!DisabledTS.includes(item.slot)) {
+                        this.timeslotMouseDown(item.slot, idx);
                       }
-                      style={{
-                        backgroundColor: item.disabledService.includes(
-                          service_item.Service_id
-                        )
-                          ? "gray"
-                          : DisabledTS.includes(item.slot)
-                          ? "gray"
-                          : "",
-                      }}
-                      onMouseDown={() => {
-                        if (
-                          !item.disabledService.includes(
+                    }
+                  }}
+                  onMouseUp={() => this.setState({ mouseState: false })}
+                >
+                  <div className="circle" />
+                </div>
+              ))}
+              <div className="circle2 c_adjust" />
+            </div>
+          </div>
+          <div className="data-container">
+            <h1>Apps</h1>
+            {/* <Scrollbars autoHeight autoHeightMax="49vh"> */}
+            <div className="app_fixed">
+              {Service.map((service_item, service_index) => (
+                <div className="flex" key={service_item.Service_id}>
+                  <h4 className="name">
+                    {service_index + 1}{" "}
+                    {service_item.Service_name.replaceAll("_", " ")}
+                  </h4>
+                  <div
+                    className="select_all"
+                    //   className={
+                    //     isAllUCSelected[service_index]
+                    //       ? "select_all all_selected"
+                    //       : "select_all"
+                    //   }
+                    onMouseEnter={() => this.setState({ mouseState: false })}
+                    onMouseLeave={() => this.setState({ mouseState: false })}
+                    //   style={{
+                    //     backgroundColor: disabledServices.includes(
+                    //       service_item.Service_id
+                    //     )
+                    //       ? "gray"
+                    //       : null,
+                    //     cursor: disabledServices.includes(service_item.Service_id)
+                    //       ? "not-allowed"
+                    //       : "pointer",
+                    //   }}
+                    onClick={() => {
+                      // if (selectedTimeSlot.length !== 0) {
+                      //   if (!disabledServices.includes(service_item.Service_id)) {
+                      //     isAllUCSelected[service_index] =
+                      //       !isAllUCSelected[service_index];
+                      //     this.toggleUCSlot(service_item, service_index);
+                      //   }
+                      // }
+                    }}
+                  />
+                  <div
+                    className="dummy"
+                    onMouseLeave={() => this.setState({ mouseState: false })}
+                    onMouseEnter={() => this.setState({ mouseState: false })}
+                  >
+                    {data.map((item, index) => (
+                      <div
+                        key={item.slot + "2"}
+                        className={
+                          item.Usecases.includes(service_item.Service_id)
+                            ? "child activeslot"
+                            : "child"
+                        }
+                        style={{
+                          backgroundColor: item.disabledService.includes(
                             service_item.Service_id
                           )
-                        ) {
-                          if (isCamerPresent) {
-                            usecaseMouseDown(
-                              item,
-                              index,
-                              service_item,
-                              service_index
-                            );
-                          } else {
-                            usecaseMouseDown(
-                              item,
-                              index,
-                              service_item,
-                              service_index
-                            );
+                            ? "gray"
+                            : DisabledTS.includes(item.slot)
+                            ? "gray"
+                            : "",
+                        }}
+                        onMouseDown={() => {
+                          if (
+                            !item.disabledService.includes(
+                              service_item.Service_id
+                            )
+                          ) {
+                            if (isCamerPresent) {
+                              this.usecaseMouseDown(
+                                item,
+                                index,
+                                service_item,
+                                service_index
+                              );
+                            } else {
+                              this.usecaseMouseDown(
+                                item,
+                                index,
+                                service_item,
+                                service_index
+                              );
+                            }
                           }
-                        }
-                        //   if (
-                        //     !item.disabledService.includes(
-                        //       service_item.Service_id
-                        //     )
-                        //   ) {
-                        //     if (this.state.isCamerPresent) {
-                        //       if (
-                        //         !this.state.DisabledTS.includes(item.slot)
-                        //       ) {
-                        //         this.usecaseMouseDown2(
-                        //           item,
-                        //           service_index,
-                        //           service_item,
-                        //           index
-                        //         );
-                        //       }
-                        //     } else {
-                        //       this.usecaseMouseDown(
-                        //         item,
-                        //         service_index,
-                        //         service_item,
-                        //         index
-                        //       );
-                        //     }
-                        //   }
-                      }}
-                      onMouseEnter={() => {
-                        //   if (this.state.mouseState) {
-                        //     if (
-                        //       !item.disabledService.includes(
-                        //         service_item.Service_id
-                        //       )
-                        //     ) {
-                        //       if (this.state.isCamerPresent) {
-                        //         this.usecaseMouseDown2(
-                        //           item,
-                        //           service_index,
-                        //           service_item,
-                        //           index
-                        //         );
-                        //       } else {
-                        //         this.usecaseMouseDown(
-                        //           item,
-                        //           service_index,
-                        //           service_item,
-                        //           index
-                        //         );
-                        //       }
-                        //     }
-                        //   }
-                      }}
-                      onMouseUp={() => setMouseState(false)}
-                    >
-                      <div className="circle" />
-                    </div>
-                  ))}
-                  <div className="circle2" />
+                          //   if (
+                          //     !item.disabledService.includes(
+                          //       service_item.Service_id
+                          //     )
+                          //   ) {
+                          //     if (this.state.isCamerPresent) {
+                          //       if (
+                          //         !this.state.DisabledTS.includes(item.slot)
+                          //       ) {
+                          //         this.usecaseMouseDown2(
+                          //           item,
+                          //           service_index,
+                          //           service_item,
+                          //           index
+                          //         );
+                          //       }
+                          //     } else {
+                          //       this.usecaseMouseDown(
+                          //         item,
+                          //         service_index,
+                          //         service_item,
+                          //         index
+                          //       );
+                          //     }
+                          //   }
+                        }}
+                        onMouseEnter={() => {
+                          //   if (this.state.mouseState) {
+                          //     if (
+                          //       !item.disabledService.includes(
+                          //         service_item.Service_id
+                          //       )
+                          //     ) {
+                          //       if (this.state.isCamerPresent) {
+                          //         this.usecaseMouseDown2(
+                          //           item,
+                          //           service_index,
+                          //           service_item,
+                          //           index
+                          //         );
+                          //       } else {
+                          //         this.usecaseMouseDown(
+                          //           item,
+                          //           service_index,
+                          //           service_item,
+                          //           index
+                          //         );
+                          //       }
+                          //     }
+                          //   }
+                        }}
+                        onMouseUp={() => this.setState({ mouseState: false })}
+                      >
+                        <div className="circle" />
+                      </div>
+                    ))}
+                    <div className="circle2" />
+                  </div>
+                  <i
+                    // style={{
+                    //   display: this.toggleSetting(service_item.Service_name)
+                    //     ? "block"
+                    //     : "none",
+                    // }}
+                    onClick={() => {
+                      //   if (this.toggleSetting(service_item.Service_name)) {
+                      //     // this.props.handleHistory("App Configuration");
+                      //     this.setState({ ActiveTab: "Configuration" });
+                      //     clearTimeout(counterTimeout);
+                      //     sessionStorage.removeItem("timer");
+                      //     var url = new URL(window.location.href);
+                      //     url.searchParams.append(
+                      //       "service",
+                      //       service_item.Service_name
+                      //     );
+                      //     window.history.pushState(null, null, url);
+                      //   }
+                    }}
+                    className="material-icons setting_icon"
+                  >
+                    settings
+                  </i>
                 </div>
-                <i
-                  // style={{
-                  //   display: this.toggleSetting(service_item.Service_name)
-                  //     ? "block"
-                  //     : "none",
-                  // }}
-                  onClick={() => {
-                    //   if (this.toggleSetting(service_item.Service_name)) {
-                    //     // this.props.handleHistory("App Configuration");
-                    //     this.setState({ ActiveTab: "Configuration" });
-                    //     clearTimeout(counterTimeout);
-                    //     sessionStorage.removeItem("timer");
-                    //     var url = new URL(window.location.href);
-                    //     url.searchParams.append(
-                    //       "service",
-                    //       service_item.Service_name
-                    //     );
-                    //     window.history.pushState(null, null, url);
-                    //   }
-                  }}
-                  className="material-icons setting_icon"
-                >
-                  settings
-                </i>
-              </div>
-            ))}
+              ))}
+            </div>
+            {/* </Scrollbars> */}
           </div>
-          {/* </Scrollbars> */}
         </div>
       </div>
-    </div>
-  );
+    );
+  }
 }
 
 const _data = [
