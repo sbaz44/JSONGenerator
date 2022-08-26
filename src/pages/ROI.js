@@ -55,7 +55,6 @@ export default class ROI extends Component {
       var ucIndex = uniqueD.indexOf(item_serviceID);
       if (ucIndex >= 0) {
         uniqueD.splice(ucIndex, 1);
-        console.table(uniqueD);
         return uniqueD;
       }
     }
@@ -125,9 +124,22 @@ export default class ROI extends Component {
     const { data } = this.state;
     let _data = _.cloneDeep(data);
     // let _service = _.cloneDeep(Service);
-    let elePresent = _.includes(data_item.Usecases, service_item.Service_id);
+    // let _usecases = [...data_item.Usecases];
+    let unique_UC_Dependent = _.union(
+      _data[data_index].Dependent,
+      _data[data_index].Usecases
+    );
+    // if (this.state.isCamerPresent) {
+    //   unique_UC_Dependent = _.union(
+    //     unique_UC_Dependent,
+    //     _data[data_index].staticDependent,
+    //     _data[data_index].staticUC
+    //   );
+    //   // staticUC;
+    // }
+    let elePresent = _.includes(unique_UC_Dependent, service_item.Service_id);
 
-    console.log(elePresent);
+    console.log(elePresent, unique_UC_Dependent);
     if (!elePresent) {
       _data[data_index].Usecases.push(service_item.Service_id);
       _data[data_index].Usecases = [...new Set(_data[data_index].Usecases)];
@@ -174,7 +186,7 @@ export default class ROI extends Component {
         });
       }
     }
-    console.table(_data);
+    console.log(_data);
     this.setState({
       data: [..._data],
       mouseState: true,
@@ -539,7 +551,7 @@ export default class ROI extends Component {
         });
       }
     }
-    console.table(_data);
+    console.log(_data);
     this.setState({
       data: [..._data],
     });
