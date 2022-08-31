@@ -19,6 +19,7 @@ export default function VMSPlayer() {
   };
   useEffect(() => {
     let link = query.get("link");
+    console.log(link);
     let decryptedData = decrypt(link);
     console.log(decryptedData);
     setData([...decryptedData]);

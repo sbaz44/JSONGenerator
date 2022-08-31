@@ -122,7 +122,6 @@ export default class ROI extends Component {
     isIgnore
   ) => {
     console.log("usecaseMouseDown()");
-    console.log(data_item, data_index, service_item, service_index, isIgnore);
     let _data = _.cloneDeep(this.state.data);
     let elePresent = _.includes(data_item.Usecases, service_item.Service_id);
     console.log(elePresent);
