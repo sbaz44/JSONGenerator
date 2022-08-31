@@ -39,23 +39,16 @@ export default class ROI extends Component {
     }
   };
 
-  intersectionService = (
-    services_AI,
-    _activeAI,
-    item_serviceID,
-    idx,
-    data_
-  ) => {
+  intersectionService = (services_AI, _activeAI, item_serviceID, data_) => {
     let intersection = services_AI.filter((x) => !_activeAI.includes(x));
     let add = _activeAI.length + intersection.length;
     if (deepStreamLimit < add) {
-      return _.union(data_[idx].disabledService, [item_serviceID]);
+      return _.union(data_.disabledService, [item_serviceID]);
     } else {
-      let uniqueD = [...new Set(data_[idx].disabledService)];
+      let uniqueD = [...new Set(data_.disabledService)];
       var ucIndex = uniqueD.indexOf(item_serviceID);
       if (ucIndex >= 0) {
         uniqueD.splice(ucIndex, 1);
-        console.table(uniqueD);
         return uniqueD;
       }
     }
@@ -107,7 +100,7 @@ export default class ROI extends Component {
           data: [..._data],
         });
       } else {
-        console.table(_data);
+        console.log(_data);
         this.cameraPresent(_data, i, idx);
       }
     } else {
@@ -121,12 +114,17 @@ export default class ROI extends Component {
     });
   };
 
-  usecaseMouseDown = (data_item, data_index, service_item, service_index) => {
-    const { data } = this.state;
-    let _data = _.cloneDeep(data);
-    // let _service = _.cloneDeep(Service);
+  usecaseMouseDown = (
+    data_item,
+    data_index,
+    service_item,
+    service_index,
+    isIgnore
+  ) => {
+    console.log("usecaseMouseDown()");
+    console.log(data_item, data_index, service_item, service_index, isIgnore);
+    let _data = _.cloneDeep(this.state.data);
     let elePresent = _.includes(data_item.Usecases, service_item.Service_id);
-
     console.log(elePresent);
     if (!elePresent) {
       _data[data_index].Usecases.push(service_item.Service_id);
@@ -144,6 +142,9 @@ export default class ROI extends Component {
         _data[data_index].Dependent = [..._res];
       }
     } else {
+      if (isIgnore) {
+        return;
+      }
       console.log("else");
       //removing UC
       const ucIndex = _data[data_index].Usecases.indexOf(
@@ -344,7 +345,6 @@ export default class ROI extends Component {
     data_
   ) => {
     const { selectedTimeSlot, data, Service, isCamerPresent } = this.state;
-
     console.log("toggleUsecases()");
     let _data = _.cloneDeep(data_);
     let _service = _.cloneDeep(Service);
@@ -368,11 +368,13 @@ export default class ROI extends Component {
     } else {
       let popData = [];
       this.Loop(_service, (serEle) => {
-        console.log(serEle.Dependent_services.AI, unique_AI);
-        if (
-          serEle.Dependent_services.AI.length + unique_AI.length >
-          deepStreamLimit
-        ) {
+        // console.log(serEle.Dependent_services.AI, unique_AI);
+        const intersection = serEle.Dependent_services.AI.filter(
+          (value) => !unique_AI.includes(value)
+        );
+        // console.log(intersection);
+        let add = unique_AI.length + intersection.length;
+        if (add > deepStreamLimit) {
           console.log(serEle.Service_id);
           popData.push(serEle.Service_id);
         } else {
@@ -470,7 +472,7 @@ export default class ROI extends Component {
   };
   cameraPresent = (data_, slot, idx) => {
     console.log("cameraPresent()");
-    console.table(data_);
+    console.log(data_, slot, idx);
 
     let _data = _.cloneDeep(data_);
     let _service = [...this.state.Service];
@@ -498,8 +500,10 @@ export default class ROI extends Component {
                 else result.push(false);
               });
             });
+
             if (!result.includes(true)) {
               if (item.Category === "Analytics") {
+                console.log("Analytics");
                 //console.log("CATEGORY IS ANALYTIC " + item.Service_id);
                 // this.toggleAnalytics2(data_ele, item);
               } else {
@@ -508,14 +512,12 @@ export default class ROI extends Component {
                     item.Dependent_services.AI,
                     _activeAI,
                     item.Service_id,
-                    idx,
-                    _data
+                    _data[idx]
                   ),
                 ];
               }
             } else {
               console.log("object2");
-
               if (item.Category === "Analytics") {
                 //console.log("CATEGORY IS ANALYTIC " + item.Service_id);
                 // this.toggleAnalytics2(data_ele, item);
@@ -525,10 +527,12 @@ export default class ROI extends Component {
                     item.Dependent_services.AI,
                     _activeAI,
                     item.Service_id,
-                    idx,
-                    _data
+                    _data[idx]
                   ),
                 ];
+                if (item.Service_id === "Safety_Gear_Missing_Alert") {
+                  console.table(_data[idx].disabledService);
+                }
               }
             }
           } else {
@@ -539,7 +543,7 @@ export default class ROI extends Component {
         });
       }
     }
-    console.table(_data);
+    console.log(_data);
     this.setState({
       data: [..._data],
     });
@@ -551,6 +555,7 @@ export default class ROI extends Component {
     let _selectedTimeSlot = _.cloneDeep(this.state.selectedTimeSlot);
     if (this.state.isCamerPresent) {
       if (isAllTimeSelected) {
+        isAllUCSelected = [];
         _selectedTimeSlot = [];
         for (let i = 0; i < time.length; i++) {
           await this.setState({ selectedTimeSlot: _selectedTimeSlot });
@@ -559,7 +564,24 @@ export default class ROI extends Component {
             _selectedTimeSlot.push(time[i]);
           }
         }
-        // _selectedTimeSlot = _.union(_selectedTimeSlot);
+      } else {
+        isAllUCSelected = [];
+        this.Loop(this.state.Service, (servEle) => {
+          isAllUCSelected.push(false);
+          disabledServices.push(servEle.Service_id);
+        });
+
+        this.Loop(_data, (data_ele) => {
+          this.Loop(this.state.Service, (_service_ele) => {
+            data_ele.disabledService.push(_service_ele.Service_id);
+            data_ele.disabledService = [...new Set(data_ele.disabledService)];
+          });
+          data_ele.AI.length = 0;
+          data_ele.Dependent.length = 0;
+          data_ele.Usecases.length = 0;
+        });
+
+        this.setState({ selectedTimeSlot: [], data: [..._data] });
       }
     } else {
     }
@@ -567,9 +589,209 @@ export default class ROI extends Component {
     // setSelectedTimeSlot([..._selectedTimeSlot]);
   };
 
+  toggleUCSlot = async (service_item, service_index) => {
+    let _data = _.cloneDeep(this.state.data);
+    let _selectedTimeSlot = _.cloneDeep(this.state.selectedTimeSlot);
+    console.log(
+      isAllUCSelected,
+      disabledServices,
+      _selectedTimeSlot,
+      isAllTimeSelected
+    );
+    for (let i = 0; i < _data.length; i++) {
+      for (let j = 0; j < _selectedTimeSlot.length; j++) {
+        if (_selectedTimeSlot[j] === _data[i].slot) {
+          if (this.state.isCamerPresent) {
+            if (this.state.DisabledTS.length > 0) {
+              if (this.state.DisabledTS.includes(_selectedTimeSlot[j])) {
+                _data[i].disabledService.push(service_item.Service_name);
+              } else {
+                this.usecaseMouseDown(_data[i], i, service_item, service_index);
+              }
+            } else {
+              if (isAllUCSelected[service_index]) {
+                if (_data[i].Usecases.includes(service_item.Service_id)) {
+                  if (
+                    service_item.Dependent_services.AI.length <= deepStreamLimit
+                  ) {
+                    this.setState({ data: _data }, () =>
+                      this.usecaseMouseDown(
+                        _data[i],
+                        i,
+                        service_item,
+                        service_index,
+                        true
+                      )
+                    );
+                  }
+                } else {
+                  if (
+                    !_data[i].disabledService.includes(service_item.Service_id)
+                  ) {
+                    let indexx = _data[i].disabledService.indexOf(
+                      service_item.Service_id
+                    );
+                    if (indexx >= 0) {
+                      _data[i].disabledService.splice(indexx, 1);
+                    }
+                    this.setState({ data: _data }, () =>
+                      this.usecaseMouseDown(
+                        _data[i],
+                        i,
+                        service_item,
+                        service_index,
+                        false
+                      )
+                    );
+                  }
+                }
+              } else {
+                if (
+                  !_data[i].disabledService.includes(service_item.Service_id)
+                ) {
+                  this.setState({ data: _data }, () =>
+                    this.usecaseMouseDown(
+                      _data[i],
+                      i,
+                      service_item,
+                      service_index,
+                      false
+                    )
+                  );
+                } else {
+                }
+              }
+
+              // this.usecaseMouseDown2(_data[i], service_index, service_item, i);
+            }
+          } else {
+            if (isAllUCSelected[service_index]) {
+              if (_data[i].Usecases.includes(service_item.Service_id)) {
+                // if (
+                //   service_item.Dependent_services.AI.length <= deepStreamLimit
+                // ) { // extra added for testing[31/1]
+                this.setState({ data: _data }, () =>
+                  this.usecaseMouseDown(
+                    _data[i],
+                    i,
+                    service_item,
+                    service_index,
+                    true
+                  )
+                );
+                // }
+              } else {
+                if (
+                  !_data[i].disabledService.includes(service_item.Service_id)
+                ) {
+                  let indexx = _data[i].disabledService.indexOf(
+                    service_item.Service_id
+                  );
+                  if (indexx >= 0) {
+                    _data[i].disabledService.splice(indexx, 1);
+                  }
+
+                  this.setState({ data: [..._data] }, () =>
+                    this.usecaseMouseDown(
+                      _data[i],
+                      i,
+                      service_item,
+                      service_index,
+                      false
+                    )
+                  );
+                }
+              }
+            } else {
+              if (!_data[i].disabledService.includes(service_item.Service_id)) {
+                this.setState({ data: _data }, () =>
+                  this.usecaseMouseDown(
+                    _data[i],
+                    i,
+                    service_item,
+                    service_index,
+                    false
+                  )
+                );
+              }
+            }
+          }
+        }
+      }
+    }
+  };
+
   componentDidMount() {
     this.onLoad();
   }
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.data !== this.state.data) {
+      this.renderIsAllSelected();
+    }
+  }
+  renderIsAllSelected = () => {
+    let _data = _.cloneDeep(this.state.data);
+    let _service = [...this.state.Service];
+    let _selectedTimeSlot = _.cloneDeep(this.state.selectedTimeSlot);
+    let _DisabledTS = _.cloneDeep(this.state.DisabledTS);
+    let _add = [];
+    Array.prototype.push.apply(_add, _DisabledTS);
+    Array.prototype.push.apply(_add, _selectedTimeSlot);
+    if (_add.length === 12) {
+      isAllTimeSelected = true;
+    } else {
+      isAllTimeSelected = false;
+    }
+    let _i = 0;
+    for (let servEle of _service) {
+      let count = 0;
+      let count2 = 0;
+      for (let dataEle of _data) {
+        if (dataEle.disabledService.includes(servEle.Service_id)) {
+          count += 1;
+        }
+        if (dataEle.Usecases.includes(servEle.Service_id)) {
+          count2 += 1;
+        }
+      }
+      if (count2 === 12) {
+        isAllUCSelected[_i] = true;
+      } else isAllUCSelected[_i] = false;
+      if (count === 12) {
+        disabledServices.push(servEle.Service_id);
+        disabledServices = [...new Set(disabledServices)];
+      } else {
+        if (count === 0) {
+          let indexx = disabledServices.indexOf(servEle.Service_id);
+          if (indexx >= 0) {
+            disabledServices.splice(indexx, 1);
+          }
+        } else {
+          let _count = 0;
+          for (let i = 0; i < _data.length; i++) {
+            if (_data[i].disabledService.includes(servEle.Service_id)) {
+              _count += 1;
+            }
+            if (_data[i].Usecases.includes(servEle.Service_id)) {
+              _count += 1;
+            }
+          }
+          if (_count === 12) {
+            isAllUCSelected[_i] = true;
+          } else {
+            let indexx = disabledServices.indexOf(servEle.Service_id);
+            if (indexx >= 0) {
+              disabledServices.splice(indexx, 1);
+            }
+            isAllUCSelected[_i] = false;
+          }
+        }
+      }
+      _i++;
+    }
+
+    this.setState({ dummy: "" });
+  };
   render() {
     const {
       data,
@@ -582,46 +804,16 @@ export default class ROI extends Component {
     } = this.state;
     return (
       <div className="roiContainer">
+        {console.log("MOUSE STATE: " + mouseState)}
         <div className="containerr">
           <div className="timeline-header">
             <p className="h">Time (24 Hrs)</p>
             <div className="timeline">
-              <div className="time">
-                <p>0</p>
-              </div>
-              <div className="time">
-                <p>2</p>
-              </div>
-              <div className="time">
-                <p>4</p>
-              </div>
-              <div className="time">
-                <p>6</p>
-              </div>
-              <div className="time">
-                <p>8</p>
-              </div>
-              <div className="time">
-                <p>10</p>
-              </div>
-              <div className="time">
-                <p>12</p>
-              </div>
-              <div className="time">
-                <p>14</p>
-              </div>
-              <div className="time">
-                <p>16</p>
-              </div>
-              <div className="time">
-                <p>18</p>
-              </div>
-              <div className="time">
-                <p>20</p>
-              </div>
-              <div className="time">
-                <p>22</p>
-              </div>
+              {[0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22].map((item) => (
+                <div key={item} className="time">
+                  <p>{item}</p>
+                </div>
+              ))}
               <div className="time">
                 <span>24</span>
               </div>
@@ -701,32 +893,33 @@ export default class ROI extends Component {
                     {service_item.Service_name.replaceAll("_", " ")}
                   </h4>
                   <div
-                    className="select_all"
-                    //   className={
-                    //     isAllUCSelected[service_index]
-                    //       ? "select_all all_selected"
-                    //       : "select_all"
-                    //   }
+                    className={
+                      isAllUCSelected[service_index]
+                        ? "select_all all_selected"
+                        : "select_all"
+                    }
                     onMouseEnter={() => this.setState({ mouseState: false })}
                     onMouseLeave={() => this.setState({ mouseState: false })}
-                    //   style={{
-                    //     backgroundColor: disabledServices.includes(
-                    //       service_item.Service_id
-                    //     )
-                    //       ? "gray"
-                    //       : null,
-                    //     cursor: disabledServices.includes(service_item.Service_id)
-                    //       ? "not-allowed"
-                    //       : "pointer",
-                    //   }}
+                    style={{
+                      backgroundColor: disabledServices.includes(
+                        service_item.Service_id
+                      )
+                        ? "gray"
+                        : null,
+                      cursor: disabledServices.includes(service_item.Service_id)
+                        ? "not-allowed"
+                        : "pointer",
+                    }}
                     onClick={() => {
-                      // if (selectedTimeSlot.length !== 0) {
-                      //   if (!disabledServices.includes(service_item.Service_id)) {
-                      //     isAllUCSelected[service_index] =
-                      //       !isAllUCSelected[service_index];
-                      //     this.toggleUCSlot(service_item, service_index);
-                      //   }
-                      // }
+                      if (selectedTimeSlot.length !== 0) {
+                        if (
+                          !disabledServices.includes(service_item.Service_id)
+                        ) {
+                          isAllUCSelected[service_index] =
+                            !isAllUCSelected[service_index];
+                          this.toggleUCSlot(service_item, service_index);
+                        }
+                      }
                     }}
                   />
                   <div
@@ -773,56 +966,37 @@ export default class ROI extends Component {
                               );
                             }
                           }
-                          //   if (
-                          //     !item.disabledService.includes(
-                          //       service_item.Service_id
-                          //     )
-                          //   ) {
-                          //     if (this.state.isCamerPresent) {
-                          //       if (
-                          //         !this.state.DisabledTS.includes(item.slot)
-                          //       ) {
-                          //         this.usecaseMouseDown2(
-                          //           item,
-                          //           service_index,
-                          //           service_item,
-                          //           index
-                          //         );
-                          //       }
-                          //     } else {
-                          //       this.usecaseMouseDown(
-                          //         item,
-                          //         service_index,
-                          //         service_item,
-                          //         index
-                          //       );
-                          //     }
-                          //   }
                         }}
                         onMouseEnter={() => {
-                          //   if (this.state.mouseState) {
-                          //     if (
-                          //       !item.disabledService.includes(
-                          //         service_item.Service_id
-                          //       )
-                          //     ) {
-                          //       if (this.state.isCamerPresent) {
-                          //         this.usecaseMouseDown2(
-                          //           item,
-                          //           service_index,
-                          //           service_item,
-                          //           index
-                          //         );
-                          //       } else {
-                          //         this.usecaseMouseDown(
-                          //           item,
-                          //           service_index,
-                          //           service_item,
-                          //           index
-                          //         );
-                          //       }
-                          //     }
-                          //   }
+                          if (mouseState) {
+                            if (
+                              !item.disabledService.includes(
+                                service_item.Service_id
+                              )
+                            ) {
+                              this.usecaseMouseDown(
+                                item,
+                                service_index,
+                                service_item,
+                                index
+                              );
+                              // if (isCamerPresent) {
+                              //   this.usecaseMouseDown(
+                              //     item,
+                              //     service_index,
+                              //     service_item,
+                              //     index
+                              //   );
+                              // } else {
+                              //   this.usecaseMouseDown(
+                              //     item,
+                              //     service_index,
+                              //     service_item,
+                              //     index
+                              //   );
+                              // }
+                            }
+                          }
                         }}
                         onMouseUp={() => this.setState({ mouseState: false })}
                       >
@@ -831,7 +1005,8 @@ export default class ROI extends Component {
                     ))}
                     <div className="circle2" />
                   </div>
-                  <i
+                  {settingIcon(() => {})}
+                  {/* <i
                     // style={{
                     //   display: this.toggleSetting(service_item.Service_name)
                     //     ? "block"
@@ -854,7 +1029,7 @@ export default class ROI extends Component {
                     className="material-icons setting_icon"
                   >
                     settings
-                  </i>
+                  </i> */}
                 </div>
               ))}
             </div>
@@ -992,16 +1167,16 @@ const _data = [
 const _time = [
   "0-2",
   "2-4",
-  // "4-6",
-  // "6-8",
-  // "8-10",
-  // "10-12",
-  // "12-14",
-  // "14-16",
-  // "16-18",
-  // "18-20",
-  // "20-22",
-  // "22-24",
+  "4-6",
+  "6-8",
+  "8-10",
+  "10-12",
+  "12-14",
+  "14-16",
+  "16-18",
+  "18-20",
+  "20-22",
+  "22-24",
 ];
 
 const _apiData = {
@@ -1144,3 +1319,28 @@ const _apiData = {
     local: {},
   },
 };
+
+const settingIcon = (onClick) => (
+  <svg
+    width="24px"
+    height="24px"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className="setting_icon"
+    onClick={onClick}
+  >
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M12.0028 9.63158C10.6438 9.63158 9.54209 10.692 9.54209 12C9.54209 13.308 10.6438 14.3684 12.0028 14.3684C13.3618 14.3684 14.4635 13.308 14.4635 12C14.4635 10.692 13.3618 9.63158 12.0028 9.63158ZM7.90162 12C7.90162 9.81993 9.73778 8.05263 12.0028 8.05263C14.2678 8.05263 16.104 9.81993 16.104 12C16.104 14.1801 14.2678 15.9474 12.0028 15.9474C9.73778 15.9474 7.90162 14.1801 7.90162 12Z"
+      fill="#030D45"
+    />
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M20.4013 12L20.6372 12.1317C21.9353 12.8564 22.384 14.4527 21.6424 15.7085L20.1373 18.2571C19.3866 19.5284 17.7029 19.9668 16.3886 19.2331L16.1861 19.12V19.3684C16.1861 20.8218 14.962 22 13.452 22H10.4674C8.95737 22 7.73326 20.8218 7.73326 19.3684V19.1537L7.63601 19.2093C6.32014 19.9618 4.61882 19.5281 3.86247 18.2473L2.35757 15.699C1.62153 14.4526 2.05745 12.8685 3.33798 12.1362L3.57614 12L3.33798 11.8638C2.05745 11.1315 1.62153 9.5474 2.35756 8.30102L3.86247 5.75268C4.61882 4.47192 6.32014 4.0382 7.63601 4.79069L7.73326 4.84631V4.63158C7.73326 3.17819 8.95737 2 10.4674 2H13.452C14.962 2 16.1861 3.1782 16.1861 4.63158V4.87996L16.3886 4.76691C17.7029 4.03322 19.3866 4.47158 20.1373 5.74292L21.6424 8.29153C22.384 9.54727 21.9353 11.1436 20.6372 11.8683L20.4013 12ZM18.7627 12.9106C18.0361 12.5049 18.0361 11.4951 18.7627 11.0894L19.8141 10.5025C20.3334 10.2126 20.5129 9.57406 20.2162 9.07176L18.7112 6.52315C18.4108 6.01462 17.7374 5.83928 17.2117 6.13275L16.188 6.70421C15.4589 7.11123 14.5457 6.6049 14.5457 5.79366V4.63158C14.5457 4.05023 14.056 3.57895 13.452 3.57895H10.4674C9.86337 3.57895 9.37373 4.05023 9.37373 4.63158V5.77123C9.37373 6.5874 8.45047 7.09307 7.72146 6.67618L6.79807 6.14812C6.27172 5.84713 5.5912 6.02061 5.28866 6.53292L3.78375 9.08126C3.48933 9.57981 3.6637 10.2135 4.17591 10.5064L5.20531 11.095C5.91867 11.503 5.91867 12.497 5.20531 12.905L4.17591 13.4936C3.6637 13.7865 3.48933 14.4202 3.78375 14.9187L5.28866 17.4671C5.5912 17.9794 6.27172 18.1529 6.79807 17.8519L7.72146 17.3238C8.45047 16.9069 9.37373 17.4126 9.37373 18.2288V19.3684C9.37373 19.9498 9.86337 20.4211 10.4674 20.4211H13.452C14.056 20.4211 14.5457 19.9498 14.5457 19.3684V18.2063C14.5457 17.3951 15.4589 16.8888 16.188 17.2958L17.2117 17.8672C17.7374 18.1607 18.4108 17.9854 18.7112 17.4768L20.2162 14.9282C20.5129 14.4259 20.3334 13.7874 19.8141 13.4975L18.7627 12.9106Z"
+      fill="#030D45"
+    />
+  </svg>
+);
