@@ -553,6 +553,7 @@ export default class ROI extends Component {
     let _data = _.cloneDeep(this.state.data);
     let _selectedTimeSlot = _.cloneDeep(this.state.selectedTimeSlot);
     if (this.state.isCamerPresent) {
+      console.log(isAllTimeSelected);
       if (isAllTimeSelected) {
         isAllUCSelected = [];
         _selectedTimeSlot = [];

@@ -15,6 +15,7 @@ import ROI from "./pages/ROI";
 import Canvas from "./pages/Canvas";
 import VMS from "./pages/VMS";
 import VMSPlayer from "./pages/VMSPlayer";
+import Charts from "./pages/Charts";
 
 export default function Routes() {
   return (
@@ -36,6 +37,7 @@ export default function Routes() {
         <Route exact path="/canvas" component={Canvas} />
         <Route exact path="/vms" component={VMS} />
         <Route exact path="/player" component={VMSPlayer} />
+        <Route exact path="/chart" component={Charts} />
       </Switch>
     </Router>
   );

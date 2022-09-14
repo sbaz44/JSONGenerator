@@ -617,3 +617,14 @@ header .profle {
   background-color: red;
   overflow: hidden;
 }
+
+.chart {
+  .filters {
+    display: flex;
+    gap: 1vw;
+    button {
+      background-color: red;
+      cursor: pointer;
+    }
+  }
+}

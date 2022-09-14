@@ -8,7 +8,7 @@
     "@testing-library/user-event": "^13.5.0",
     "array-move": "^4.0.0",
     "axios": "^0.21.1",
-    "chart.js": "^3.5.1",
+    "chart.js": "^3.7.0",
     "crypto-js": "^4.1.1",
     "formik": "^2.2.9",
     "loadash": "^1.0.0",
