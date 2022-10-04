@@ -1,0 +1,112 @@
+$desk: 100 / 1920;
+
+#loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 35vw;
+}
+
+.table_wrapper {
+  .tbl-header {
+    .table_header {
+      width: 100%;
+      border-radius: 35px;
+      background: rgb(1, 58, 162);
+      background: linear-gradient(
+        273deg,
+        rgba(1, 58, 162, 1) 63%,
+        rgba(45, 98, 237, 1) 90%
+      );
+      color: white;
+      font-weight: 600;
+    }
+  }
+  table {
+    width: 100%;
+    table-layout: fixed;
+  }
+  .tbl-content {
+    overflow-x: auto;
+    margin-top: 0px;
+    width: 102%;
+    padding-bottom: 1vw;
+    margin-top: 0.8vw;
+    .data_table {
+      border-collapse: separate;
+      border-spacing: 0 9 * $desk + vw;
+      padding-right: 1vw;
+      td {
+        border-bottom: 1px solid #f0f0f0;
+        border-top: 1px solid #f0f0f0;
+        padding-top: 15 * $desk + vw;
+        padding-bottom: 15 * $desk + vw;
+        font-size: 15 * $desk + vw;
+      }
+      td:first-child {
+        border-left-style: solid;
+        border-top-left-radius: 35px;
+        border-bottom-left-radius: 35px;
+        border-color: #f0f0f0;
+        border-width: 1px;
+      }
+      td:last-child {
+        border-right-style: solid;
+        border-bottom-right-radius: 35px;
+        border-top-right-radius: 35px;
+        border-color: #f0f0f0;
+        border-width: 1px;
+      }
+      tr {
+        &:hover {
+          td {
+            border-bottom: 1px solid var(--primary);
+            border-top: 1px solid var(--primary);
+            padding-top: 15 * $desk + vw;
+            padding-bottom: 15 * $desk + vw;
+            font-size: 15 * $desk + vw;
+            background-color: var(--sidenav);
+            .type {
+              background-color: var(--background);
+            }
+          }
+          td:first-child {
+            border-left-style: solid;
+            border-top-left-radius: 35px;
+            border-bottom-left-radius: 35px;
+            border-color: var(--primary);
+            border-width: 1px;
+          }
+          td:last-child {
+            border-right-style: solid;
+            border-bottom-right-radius: 35px;
+            border-top-right-radius: 35px;
+            border-color: var(--primary);
+            border-width: 1px;
+          }
+        }
+      }
+    }
+  }
+
+  th {
+    padding: 15 * $desk + vw;
+    text-align: center;
+    font-weight: 600;
+    font-size: 17 * $desk + vw;
+  }
+  tr {
+    border-radius: 35px;
+    border: 2px solid red;
+    // background-color: red;
+  }
+  td {
+    padding: 15px;
+    text-align: center;
+    vertical-align: middle;
+    font-weight: 300;
+    font-size: 12px;
+    // color: #fff;
+  }
+}

@@ -16,6 +16,7 @@ import Canvas from "./pages/Canvas";
 import VMS from "./pages/VMS";
 import VMSPlayer from "./pages/VMSPlayer";
 import Charts from "./pages/Charts";
+import Table from "./pages/Table";
 
 export default function Routes() {
   return (
@@ -38,6 +39,7 @@ export default function Routes() {
         <Route exact path="/vms" component={VMS} />
         <Route exact path="/player" component={VMSPlayer} />
         <Route exact path="/chart" component={Charts} />
+        <Route exact path="/table" component={Table} />
       </Switch>
     </Router>
   );
