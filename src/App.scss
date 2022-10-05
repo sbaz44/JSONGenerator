@@ -628,3 +628,26 @@ header .profle {
     }
   }
 }
+
+.table {
+  padding-right: 3vw;
+  .image {
+    width: 2.5vw;
+    height: 2.5vw;
+    border-radius: 100%;
+    z-index: 9;
+    vertical-align: middle;
+    cursor: pointer;
+  }
+  #img_1 {
+    margin-left: -1.5vw;
+    z-index: 8;
+  }
+  #img_2 {
+    margin-left: -1.5vw;
+    z-index: 7;
+  }
+  .image__pop {
+    z-index: 5;
+  }
+}

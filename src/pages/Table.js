@@ -1,23 +1,73 @@
-import React from "react";
+import React, { useState } from "react";
 import DynamicTable from "../components/Table/DynamicTable";
-
+import "../App.scss";
+import Popup from "../components/Popup";
+let selectedImage = null;
 export default function Table() {
+  const [ShowPop, setShowPop] = useState(false);
   const renderData = () => {
-    // return data.data.map((item) => {
-    //   return (
-    //     <tr>
-    //       {data.header.map((headerItem, idx) => {
-    //         return (
-    //           //   <td>{item[headerItem.toLowerCase().replaceAll(" ", "_")]}</td>
-    //           <td>
-    //             {/* {data.data[idx][headerItem.toLowerCase().replaceAll(" ", "_")]} */}
-    //             {data.data[idx][headerItem.toLowerCase().replaceAll(" ", "_")]}
-    //           </td>
-    //         );
-    //       })}
-    //     </tr>
-    //   );
-    // });
+    let arr = data.data[0][data.data[0].label];
+    // for (let i = 0; i < arrLength; i++) {
+    //   for (let j = 0; j < data.header.length; j++) {
+    //     console.log(data.data[j][data.data[j].label][i]);
+    //   }
+    // }
+    console.log(arr);
+    return arr.map((item, idx) => {
+      return (
+        <tr>
+          {data.header.map((headerItem, index) => {
+            if (headerItem.toLowerCase().includes("image")) {
+              if (
+                Array.isArray(data.data[index][data.data[index].label][idx])
+              ) {
+                return (
+                  <td>
+                    {data.data[index][data.data[index].label][idx].length === 0
+                      ? "No Image"
+                      : data.data[index][data.data[index].label][idx].map(
+                          (imageItem, ImageIndex) => (
+                            <img
+                              className="image"
+                              src={imageItem}
+                              id={"img_" + ImageIndex}
+                              onClick={() => {
+                                selectedImage =
+                                  data.data[index][data.data[index].label][idx];
+                                console.log(selectedImage);
+                                setShowPop(true);
+                              }}
+                            />
+                          )
+                        )}
+                  </td>
+                );
+              } else
+                return (
+                  <td>
+                    {data.data[index][data.data[index].label][idx] ? (
+                      <img
+                        className="image"
+                        src={data.data[index][data.data[index].label][idx]}
+                        onClick={() => {
+                          selectedImage =
+                            data.data[index][data.data[index].label][idx];
+                          console.log(selectedImage);
+                          setShowPop(true);
+                        }}
+                      />
+                    ) : (
+                      "No Image"
+                    )}
+                  </td>
+                );
+              // if(Array.isArray())
+            } else
+              return <td>{data.data[index][data.data[index].label][idx]}</td>;
+          })}
+        </tr>
+      );
+    });
 
     // return data.data.map((item) => (
     //   <tr>
@@ -34,12 +84,35 @@ export default function Table() {
     //   </tr>
     // ));
 
-    return data.data.map((item) => console.log(item));
+    // return data.data.map((item) => {});
   };
 
   return (
-    <div>
+    <div className="table">
       <DynamicTable header={data.header} tableData={renderData} />
+      {ShowPop && (
+        <Popup onClick={() => setShowPop(false)}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              flexDirection: "column",
+            }}
+            className="image__pop"
+          >
+            {Array.isArray(selectedImage) ? (
+              <div>
+                <img src={selectedImage[0]} />
+              </div>
+            ) : (
+              <div>
+                <img src={selectedImage} />
+              </div>
+            )}
+          </div>
+        </Popup>
+      )}
     </div>
   );
 }
@@ -70,11 +143,21 @@ const data = {
       label: "age",
       age: [11, 23, 31, 24, 53, 61, 27, 28, 49, 30],
     },
+    // {
+    //   label: "phone",
+    //   phone: [
+    //     123, 43245, 4234, 245435, 23, 234, 2345435, 234234, 124234, 234234,
+    //   ],
+    // },
     {
       label: "image",
       image: [
-        "https://source.unsplash.com/random/200x200?sig=1",
-        "https://source.unsplash.com/random/200x200?sig=2",
+        [
+          "https://source.unsplash.com/random/200x200?sig=1",
+          "https://source.unsplash.com/random/200x200?sig=5",
+          "https://source.unsplash.com/random/200x200?sig=8",
+        ],
+        [],
         "https://source.unsplash.com/random/200x200?sig=3",
         "https://source.unsplash.com/random/200x200?sig=4",
         "https://source.unsplash.com/random/200x200?sig=5",
@@ -82,7 +165,7 @@ const data = {
         "https://source.unsplash.com/random/200x200?sig=7",
         "https://source.unsplash.com/random/200x200?sig=8",
         "https://source.unsplash.com/random/200x200?sig=9",
-        "https://source.unsplash.com/random/200x200?sig=12",
+        "",
       ],
     },
   ],
