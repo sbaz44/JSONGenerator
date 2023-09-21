@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import ReactHlsPlayer from "react-hls-player";
 import { Link, useLocation } from "react-router-dom";
 import CryptoJS from "crypto-js";
@@ -53,7 +53,9 @@ export default function VMS() {
       >
         Open in new tab
       </button>
-
+      {[1, 2].map((item) => (
+        <Child Interval={item * 2000} />
+      ))}
       {/* <ReactHlsPlayer
         src="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
         autoPlay={true}
@@ -67,5 +69,16 @@ export default function VMS() {
   );
 }
 
+const Child = ({ Interval = 2000 }) => {
+  console.log(Interval);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      console.log("This will be called every" + Interval + " seconds");
+    }, Interval);
+
+    return () => clearInterval(interval);
+  }, []);
+  return <div>CHILD DATA</div>;
+};
 // http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8
 // https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8

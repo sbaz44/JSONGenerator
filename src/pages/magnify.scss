@@ -1,0 +1,19 @@
+.video-container {
+  position: relative;
+  width: 640px;
+  height: 360px;
+  overflow: hidden;
+  video {
+    display: block;
+    cursor: none;
+  }
+  .zoom-container {
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    overflow: hidden;
+    border: 3px solid black;
+  }
+}

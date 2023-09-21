@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import Scrollbars from "react-custom-scrollbars";
 import "./canvas.scss";
 import bg from "./sachinImg.png";
-import Test_360 from "./Test_360.png";
-// import bg from "./Test_1080.png";
+import Test_1080 from "./Test_1080.png";
+
 let LOIClicks = 0;
 let lastClick = [0, 0];
 let _lastClick = [0, 0];
@@ -11,7 +11,7 @@ let dots = 0;
 let finalROI = []; //only to pass it as param in INSIDE function
 let activeIndex = -1;
 let isUpdate = false;
-export default function Canvas() {
+export default function Canvas2() {
   let cnt = 1;
   const [Demo, setDemo] = useState(false);
   const [Rows, setRows] = useState(0);
@@ -129,13 +129,13 @@ export default function Canvas() {
     roiData.map((item, idx) =>
       idx === 3
         ? drawROI(
-            [roiData[idx].x, roiData[idx].y],
-            [roiData[0].x, roiData[0].y]
-          )
+          [roiData[idx].x, roiData[idx].y],
+          [roiData[0].x, roiData[0].y]
+        )
         : drawROI(
-            [roiData[idx].x, roiData[idx].y],
-            [roiData[idx + 1].x, roiData[idx + 1].y]
-          )
+          [roiData[idx].x, roiData[idx].y],
+          [roiData[idx + 1].x, roiData[idx + 1].y]
+        )
     );
 
     loiData.map((item, idx) => {
@@ -332,24 +332,26 @@ export default function Canvas() {
     let ctx = document.getElementById("canvas").getContext("2d");
     const authResult = new URLSearchParams(window.location.search);
     const sType = authResult.get("service");
+
     let _obj = [
       {
-        x: _data[sType].roi1.roicords.x1,
-        y: _data[sType].roi1.roicords.y1,
+        x: _data[sType].roi1.roicords.x1 * 3,
+        y: _data[sType].roi1.roicords.y1 * 3,
       },
       {
-        x: _data[sType].roi1.roicords.x2,
-        y: _data[sType].roi1.roicords.y2,
+        x: _data[sType].roi1.roicords.x2 * 3,
+        y: _data[sType].roi1.roicords.y2 * 3,
       },
       {
-        x: _data[sType].roi1.roicords.x3,
-        y: _data[sType].roi1.roicords.y3,
+        x: _data[sType].roi1.roicords.x3 * 3,
+        y: _data[sType].roi1.roicords.y3 * 3,
       },
       {
-        x: _data[sType].roi1.roicords.x4,
-        y: _data[sType].roi1.roicords.y4,
+        x: _data[sType].roi1.roicords.x4 * 3,
+        y: _data[sType].roi1.roicords.y4 * 3,
       },
     ];
+    console.log(_obj);
     dots = 4;
     isUpdate = true;
     setROICord([..._obj]);
@@ -408,7 +410,7 @@ export default function Canvas() {
   useEffect(() => {
     // drawROILOI();
     // setType("LOI");
-    // getData();
+    getData();
     // console.log(_ddata);
   }, []);
 
@@ -423,12 +425,12 @@ export default function Canvas() {
           <p>Type: {Type}</p>
           <canvas
             id="canvas"
-            width="640"
-            height="360"
+            width="1920"
+            height="1080"
             style={{
               background: "gray",
               alignSelf: "center",
-              backgroundImage: "url(" + Test_360 + ")",
+              backgroundImage: "url(" + Test_1080 + ")",
               // backgroundImage: `url(https://i.ibb.co/cNDbZnC/Microsoft-Teams-image-24.jpg)`,
             }}
             onClick={(e) => {
@@ -613,58 +615,58 @@ let apiData = {
   safety: {
     roi1: {
       loicord: {
-        line1: {
-          label: "lat-423",
-          x1: 120,
-          x2: 539,
-          y1: 163,
-          y2: 158,
-        },
-        line2: {
-          label: "lat-234",
-          x1: 113,
-          x2: 538,
-          y1: 254,
-          y2: 253,
-        },
-        line3: {
-          label: "lat-23412",
-          x1: 103,
-          x2: 550,
-          y1: 333,
-          y2: 333,
-        },
-        line4: {
-          label: "lat-23",
-          x1: 224,
-          x2: 183,
-          y1: 78,
-          y2: 407,
-        },
-        line5: {
-          label: "lat-42",
-          x1: 341,
-          x2: 320,
-          y1: 77,
-          y2: 411,
-        },
-        line6: {
-          label: "lat-123",
-          x1: 447,
-          x2: 450,
-          y1: 77,
-          y2: 411,
-        },
+        // line1: {
+        //   label: "lat-423",
+        //   x1: 120,
+        //   x2: 539,
+        //   y1: 163,
+        //   y2: 158,
+        // },
+        // line2: {
+        //   label: "lat-234",
+        //   x1: 113,
+        //   x2: 538,
+        //   y1: 254,
+        //   y2: 253,
+        // },
+        // line3: {
+        //   label: "lat-23412",
+        //   x1: 103,
+        //   x2: 550,
+        //   y1: 333,
+        //   y2: 333,
+        // },
+        // line4: {
+        //   label: "lat-23",
+        //   x1: 224,
+        //   x2: 183,
+        //   y1: 78,
+        //   y2: 407,
+        // },
+        // line5: {
+        //   label: "lat-42",
+        //   x1: 341,
+        //   x2: 320,
+        //   y1: 77,
+        //   y2: 411,
+        // },
+        // line6: {
+        //   label: "lat-123",
+        //   x1: 447,
+        //   x2: 450,
+        //   y1: 77,
+        //   y2: 411,
+        // },
       },
       roicords: {
-        x1: 129,
-        x2: 537,
-        x3: 560,
-        x4: 92,
-        y1: 74,
-        y2: 76,
-        y3: 418,
-        y4: 414,
+        x1: 0,
+        x2: 639,
+        x3: 639,
+        x4: 0,
+        y1: 0,
+        y2: 0,
+        y3: 359,
+        y4: 359,
       },
       roiName: "roi1",
     },

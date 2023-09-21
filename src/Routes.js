@@ -17,6 +17,8 @@ import VMS from "./pages/VMS";
 import VMSPlayer from "./pages/VMSPlayer";
 import Charts from "./pages/Charts";
 import Table from "./pages/Table";
+import Canvas2 from "./pages/Canvas2";
+import Magnify from "./pages/Magnify";
 
 export default function Routes() {
   return (
@@ -36,10 +38,12 @@ export default function Routes() {
         <Route exact path="/dynamic" component={DynamicForm} />
         <Route exact path="/roi" component={ROI} />
         <Route exact path="/canvas" component={Canvas} />
+        <Route exact path="/canvas2" component={Canvas2} />
         <Route exact path="/vms" component={VMS} />
         <Route exact path="/player" component={VMSPlayer} />
         <Route exact path="/chart" component={Charts} />
         <Route exact path="/table" component={Table} />
+        <Route exact path="/magnify" component={Magnify} />
       </Switch>
     </Router>
   );
