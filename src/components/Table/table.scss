@@ -9,6 +9,9 @@ $desk: 100 / 1920;
 }
 
 .table_wrapper {
+  --primary: #2d62ed;
+  --background: #fff;
+  --sidebar: #f4f7fe;
   .tbl-header {
     .table_header {
       width: 100%;
@@ -66,7 +69,7 @@ $desk: 100 / 1920;
             padding-top: 15 * $desk + vw;
             padding-bottom: 15 * $desk + vw;
             font-size: 15 * $desk + vw;
-            background-color: var(--sidenav);
+            background-color: var(--sidebar);
             .type {
               background-color: var(--background);
             }
@@ -102,7 +105,7 @@ $desk: 100 / 1920;
     // background-color: red;
   }
   td {
-    padding: 15px;
+    padding: 14px;
     text-align: center;
     vertical-align: middle;
     font-weight: 300;

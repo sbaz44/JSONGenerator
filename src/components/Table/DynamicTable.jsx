@@ -40,7 +40,7 @@ class DynamicTable extends Component {
           <div className="tbl-content">
             <Scrollbars
               autoHeight
-              autoHeightMax="47vh"
+              autoHeightMax="90vh"
               renderThumbHorizontal={({ style, ...props }) => {
                 const thumbStyle = {
                   borderRadius: 6,
