@@ -135,7 +135,8 @@ const Player = memo(function Player({
 
   useEffect(() => {
     if (currentTime && currentTime >= 0) {
-      zoomRef.current.currentTime = currentTime;
+      const element = document.getElementById(parent_id);
+      zoomRef.current.currentTime = currentTime + 1;
       //   setTimeout(() => {
       //     const element = document.getElementById(parent_id);
       //     const element2 = document.getElementById(id);
@@ -164,12 +165,15 @@ const Player = memo(function Player({
           const element2 = document.getElementById(id);
           console.log(element.currentTime);
           console.log(element2);
+          zoomRef.current.currentTime = element.currentTime + 0.25;
         }
       }}
       onPlay={() => {
         if (id) {
-          const element2 = document.getElementById(id);
-          console.log(element2);
+          console.log(parent_id);
+          const element2 = document.getElementById(parent_id);
+          console.log(element2.currentTime);
+          //   zoomRef.current.currentTime = element2.currentTime;
         }
       }}
     />
