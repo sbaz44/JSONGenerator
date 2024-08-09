@@ -19,6 +19,7 @@ import Charts from "./pages/Charts";
 import Table from "./pages/Table";
 import Canvas2 from "./pages/Canvas2";
 import Magnify from "./pages/Magnify";
+import Slice from "./pages/Slice";
 
 export default function Routes() {
   return (
@@ -44,6 +45,7 @@ export default function Routes() {
         <Route exact path="/chart" component={Charts} />
         <Route exact path="/table" component={Table} />
         <Route exact path="/magnify" component={Magnify} />
+        <Route exact path="/slice" component={Slice} />
       </Switch>
     </Router>
   );
