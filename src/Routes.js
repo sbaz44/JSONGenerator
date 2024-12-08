@@ -20,6 +20,7 @@ import Table from "./pages/Table";
 import Canvas2 from "./pages/Canvas2";
 import Magnify from "./pages/Magnify";
 import Slice from "./pages/Slice";
+import Canvas3 from "./pages/Canvas3";
 
 export default function Routes() {
   return (
@@ -40,6 +41,7 @@ export default function Routes() {
         <Route exact path="/roi" component={ROI} />
         <Route exact path="/canvas" component={Canvas} />
         <Route exact path="/canvas2" component={Canvas2} />
+        <Route exact path="/canvas3" component={Canvas3} />
         <Route exact path="/vms" component={VMS} />
         <Route exact path="/player" component={VMSPlayer} />
         <Route exact path="/chart" component={Charts} />
