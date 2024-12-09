@@ -2,10 +2,10 @@ import { Memo, Show, useObservable, useObserve } from "@legendapp/state/react";
 import React, { useCallback, useRef } from "react";
 import "./canvas3.scss";
 import { batch } from "@legendapp/state";
-const defaultCurrentAnnotation = { roi: [], loi: {} };
+const defaultCurrentAnnotation = { roi: [], loi: [] };
 export default function Canvas3() {
   const canvasRef = useRef(null);
-
+  const LOIClicks = useRef(0);
   const {
     annotations,
     currentAnnotation,
@@ -13,6 +13,7 @@ export default function Canvas3() {
     isAddingNewAnnotation,
     selectedAnnotationIndex,
     isAddingLOI,
+    currentLOIIndex,
   } = useObservable({
     annotations: [],
     currentAnnotation: {
@@ -22,6 +23,7 @@ export default function Canvas3() {
     isAddingNewAnnotation: true,
     selectedAnnotationIndex: null,
     isAddingLOI: false,
+    currentLOIIndex: -1,
   });
 
   useObserve(() => {
@@ -29,6 +31,7 @@ export default function Canvas3() {
     console.log(annotations.get());
     console.log(selectedAnnotationIndex.get());
     console.log(draggingPointInfo.get());
+    console.log(currentLOIIndex.get());
   });
 
   const isPointInsidePolygon = useCallback((point, polygon) => {
@@ -50,6 +53,7 @@ export default function Canvas3() {
 
   function addLOI() {
     isAddingLOI.set(true);
+    LOIClicks.current = 0;
   }
 
   const addPoint = (event) => {
@@ -64,10 +68,6 @@ export default function Canvas3() {
       // If 4 points are complete, save the annotation
       if (newPoints.length === 4) {
         batch(() => {
-          // annotations.set((prev) => ({
-          //   roi: [...prev, currentAnnotation.get()],
-          //   loi: {},
-          // }));
           annotations.push({
             ...currentAnnotation.get(),
           });
@@ -85,6 +85,24 @@ export default function Canvas3() {
         annotations[selectedAnnotationIndex.get()].get();
       if (isPointInsidePolygon({ x, y }, selectedAnnotation.roi)) {
         console.log(annotations[selectedAnnotationIndex.get()].get());
+        if (LOIClicks.current === 0) {
+          //first LOI click
+          annotations[selectedAnnotationIndex.get()].loi.push({
+            start: { x, y },
+            end: null,
+          });
+          currentLOIIndex.set(
+            annotations[selectedAnnotationIndex.get()].loi.get().length - 1
+          );
+        }
+        if (LOIClicks.current === 1) {
+          console.log("second LOI CLICK");
+          //second LOI click
+          annotations[selectedAnnotationIndex.get()].loi[
+            currentLOIIndex.get()
+          ].end.set({ x, y });
+        }
+        LOIClicks.current < 2 && LOIClicks.current++;
       }
     }
     // user is trying to select a annotation
@@ -125,9 +143,7 @@ export default function Canvas3() {
       const rect = canvasRef.current.getBoundingClientRect();
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
-      console.log(annotations[selectedAnnotationIndex.get()].roi.get());
       annotations[selectedAnnotationIndex.get()].roi.set((prevAnnotations) => {
-        console.log(prevAnnotations);
         return prevAnnotations.map((annotation, annotationIndex) =>
           annotationIndex === draggingPointInfo.pointIndex.get()
             ? { x, y }
@@ -294,20 +310,48 @@ export default function Canvas3() {
                       </>
                     )}
                   </Show>
+                  {console.log(annotation.loi)}
+                  <Show if={() => annotation.loi.length > 0}>
+                    {() =>
+                      annotation.loi.map((loiItem, loiIndex) => {
+                        console.log(loiItem);
+                        //render single point
+                        if (loiItem.start && !loiItem.end) {
+                          return (
+                            <circle
+                              key={"LOIcircle_" + loiIndex}
+                              cx={loiItem.start.x}
+                              cy={loiItem.start.y}
+                              r={5}
+                              fill="red"
+                            />
+                          );
+                        } else {
+                          //render arrow
+                          return (
+                            <>
+                              <line
+                                x1={loiItem.start.x}
+                                y1={loiItem.start.y}
+                                x2={loiItem.end.x}
+                                y2={loiItem.end.y}
+                                stroke={
+                                  selectedAnnotationIndex.get() ===
+                                  annotationIndex
+                                    ? "green"
+                                    : "blue"
+                                }
+                                strokeWidth={2}
+                              />
+                            </>
+                          );
+                        }
+                        return null;
+                      })
+                    }
+                  </Show>
                 </React.Fragment>
               ))}
-              {/*
-              {currentAnnotation.get().length === 4 && (
-                <polygon
-                  points={currentAnnotation
-                    .get()
-                    .map((point) => `${point.x},${point.y}`)
-                    .join(" ")}
-                  fill="none"
-                  stroke="red"
-                  strokeWidth={2}
-                />
-              )} */}
             </svg>
           )}
         </Memo>
