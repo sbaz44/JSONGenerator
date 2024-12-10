@@ -4,6 +4,8 @@ import "./canvas3.scss";
 import { batch } from "@legendapp/state";
 const defaultCurrentAnnotation = { roi: [], loi: [] };
 export default function Canvas3() {
+  const renderCount = ++useRef(0).current;
+
   const canvasRef = useRef(null);
   const LOIClicks = useRef(0);
   const {
@@ -58,7 +60,6 @@ export default function Canvas3() {
 
   const getArrowCords = (arr) => {
     let xa, xb, ya, yb;
-    // console.log(arr, direction);
     let midpoint1 = (arr[1].x2 + arr[0].x1) / 2;
     let midpoint2 = (arr[1].y2 + arr[0].y1) / 2;
     let slope = (arr[1].y2 - arr[0].y1) / (arr[1].x2 - arr[0].x1);
@@ -82,7 +83,40 @@ export default function Canvas3() {
     return { xa, xb, ya, yb };
   };
 
-  // const drawArrow = (ctx, x1, y1, x2, y2, xa, xb, ya, yb, direction, idx) => {
+  function getArrowHead({ xa, xb, ya, yb }) {
+    var dx = xa - xb;
+    var dy = ya - yb;
+    var headlen = 20;
+    var angle = Math.atan2(dy, dx);
+    let res = {};
+    if (false) {
+      res = {
+        point1: {
+          x: xb + headlen * Math.cos(angle - Math.PI / 6),
+          y: yb + headlen * Math.sin(angle - Math.PI / 6),
+        },
+        point2: { x: xb, y: yb },
+        point3: {
+          x: xb + headlen * Math.cos(angle + Math.PI / 6),
+          y: yb + headlen * Math.sin(angle + Math.PI / 6),
+        },
+      };
+    } else {
+      res = {
+        point1: {
+          x: xa - headlen * Math.cos(angle - Math.PI / 6),
+          y: ya - headlen * Math.sin(angle - Math.PI / 6),
+        },
+        point2: { x: xa, y: ya },
+        point3: {
+          x: xa - headlen * Math.cos(angle + Math.PI / 6),
+          y: ya - headlen * Math.sin(angle + Math.PI / 6),
+        },
+      };
+    }
+    return res;
+  }
+
   const drawArrow = (loiItem) => {
     let arr = [
       { x1: loiItem.start.x, y1: loiItem.start.y },
@@ -90,7 +124,7 @@ export default function Canvas3() {
     ];
 
     let { xa, xb, ya, yb } = getArrowCords(arr);
-
+    let { point1, point2, point3 } = getArrowHead({ xa, xb, ya, yb });
     return (
       <>
         <line
@@ -110,79 +144,28 @@ export default function Canvas3() {
           y1={ya}
           x2={xb}
           y2={yb}
-          stroke="pink"
+          stroke="green"
           // stroke={
           //   selectedAnnotationIndex.get() === annotationIndex ? "green" : "blue"
           // }
-          strokeWidth={2}
+          strokeWidth={4}
         />
 
-        <text
-          x={xa}
-          y={ya - 20}
-          // textAnchor="middle"
-          fontSize="20"
-        >
+        <text x={xa} y={ya - 10} fontSize="16">
           A
         </text>
 
-        <text
-          x={xb}
-          y={yb + 30}
-          // textAnchor="middle"
-          fontSize="20"
-        >
+        <text x={xb} y={yb + 10} fontSize="16">
           B
         </text>
+        <polygon
+          points={`${point1.x},${point1.y} ${point2.x},${point2.y - 5} ${
+            point3.x
+          },${point3.y}`}
+          fill="green"
+        />
       </>
     );
-    // ctx.beginPath();
-    // ctx.moveTo(x1, y1);
-    // ctx.lineTo(x2, y2, 6);
-
-    // ctx.moveTo(xa, ya);
-    // ctx.lineTo(xb, yb);
-    // ctx.strokeStyle = _color.current[idx];
-    // ctx.stroke();
-    // var dx = xa - xb;
-    // var dy = ya - yb;
-    // var headlen = 20; // length of head in pixels
-    // var angle = Math.atan2(dy, dx);
-
-    // ctx.beginPath();
-    // if (direction === "A TO B") {
-    //   ctx.moveTo(
-    //     xb + headlen * Math.cos(angle - Math.PI / 6),
-    //     yb + headlen * Math.sin(angle - Math.PI / 6)
-    //   );
-    //   ctx.lineTo(xb, yb);
-    //   ctx.lineTo(
-    //     xb + headlen * Math.cos(angle + Math.PI / 6),
-    //     yb + headlen * Math.sin(angle + Math.PI / 6)
-    //   );
-    // } else {
-    //   ctx.moveTo(
-    //     xa - headlen * Math.cos(angle - Math.PI / 6),
-    //     ya - headlen * Math.sin(angle - Math.PI / 6)
-    //   );
-    //   ctx.lineTo(xa, ya);
-    //   ctx.lineTo(
-    //     xa - headlen * Math.cos(angle + Math.PI / 6),
-    //     ya - headlen * Math.sin(angle + Math.PI / 6)
-    //   );
-    // }
-    // // console.log(_color.current, { idx });
-    // ctx.lineCap = "round";
-    // //arrow ends
-    // ctx.font = "22px monospace";
-    // // console.log(_color.current[idx]);
-    // ctx.strokeStyle = _color.current[idx];
-    // ctx.fillStyle = _color.current[idx];
-    // ctx.fillText("A", xa, ya - 20);
-    // ctx.fillText("B", xb, yb + 20);
-    // // ctx.stroke();
-
-    // ctx.stroke();
   };
 
   const addPoint = (event) => {
@@ -308,6 +291,7 @@ export default function Canvas3() {
         backgroundColor: "#676767",
       }}
     >
+      <span>{renderCount}</span>
       <div
         className="canvas-container"
         onMouseMove={handleMouseMove}
