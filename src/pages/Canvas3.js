@@ -56,6 +56,135 @@ export default function Canvas3() {
     LOIClicks.current = 0;
   }
 
+  const getArrowCords = (arr) => {
+    let xa, xb, ya, yb;
+    // console.log(arr, direction);
+    let midpoint1 = (arr[1].x2 + arr[0].x1) / 2;
+    let midpoint2 = (arr[1].y2 + arr[0].y1) / 2;
+    let slope = (arr[1].y2 - arr[0].y1) / (arr[1].x2 - arr[0].x1);
+
+    if (arr[1].y2 > arr[0].y1 && arr[0].x1 > arr[1].x2) {
+      xa = midpoint1 - Math.sqrt(3200 / (1 + 1 / slope ** 2));
+      xb = midpoint1 + Math.sqrt(6400 / (1 + 1 / slope ** 2));
+      ya = midpoint2 - (1 / slope) * (xa - midpoint1);
+      yb = midpoint2 - (1 / slope) * (xb - midpoint1);
+    } else if (arr[1].y2 > arr[0].y1 || arr[0].x1 > arr[1].x2) {
+      xa = midpoint1 + Math.sqrt(3200 / (1 + 1 / slope ** 2));
+      xb = midpoint1 - Math.sqrt(6400 / (1 + 1 / slope ** 2));
+      ya = midpoint2 - (1 / slope) * (xa - midpoint1);
+      yb = midpoint2 - (1 / slope) * (xb - midpoint1);
+    } else {
+      xa = midpoint1 - Math.sqrt(3200 / (1 + 1 / slope ** 2));
+      xb = midpoint1 + Math.sqrt(6400 / (1 + 1 / slope ** 2));
+      ya = midpoint2 - (1 / slope) * (xa - midpoint1);
+      yb = midpoint2 - (1 / slope) * (xb - midpoint1);
+    }
+    return { xa, xb, ya, yb };
+  };
+
+  // const drawArrow = (ctx, x1, y1, x2, y2, xa, xb, ya, yb, direction, idx) => {
+  const drawArrow = (loiItem) => {
+    let arr = [
+      { x1: loiItem.start.x, y1: loiItem.start.y },
+      { x2: loiItem.end.x, y2: loiItem.end.y },
+    ];
+
+    let { xa, xb, ya, yb } = getArrowCords(arr);
+
+    return (
+      <>
+        <line
+          x1={loiItem.start.x}
+          y1={loiItem.start.y}
+          x2={loiItem.end.x}
+          y2={loiItem.end.y}
+          stroke="green"
+          // stroke={
+          //   selectedAnnotationIndex.get() === annotationIndex ? "green" : "blue"
+          // }
+          strokeWidth={2}
+        />
+
+        <line
+          x1={xa}
+          y1={ya}
+          x2={xb}
+          y2={yb}
+          stroke="pink"
+          // stroke={
+          //   selectedAnnotationIndex.get() === annotationIndex ? "green" : "blue"
+          // }
+          strokeWidth={2}
+        />
+
+        <text
+          x={xa}
+          y={ya - 20}
+          // textAnchor="middle"
+          fontSize="20"
+        >
+          A
+        </text>
+
+        <text
+          x={xb}
+          y={yb + 30}
+          // textAnchor="middle"
+          fontSize="20"
+        >
+          B
+        </text>
+      </>
+    );
+    // ctx.beginPath();
+    // ctx.moveTo(x1, y1);
+    // ctx.lineTo(x2, y2, 6);
+
+    // ctx.moveTo(xa, ya);
+    // ctx.lineTo(xb, yb);
+    // ctx.strokeStyle = _color.current[idx];
+    // ctx.stroke();
+    // var dx = xa - xb;
+    // var dy = ya - yb;
+    // var headlen = 20; // length of head in pixels
+    // var angle = Math.atan2(dy, dx);
+
+    // ctx.beginPath();
+    // if (direction === "A TO B") {
+    //   ctx.moveTo(
+    //     xb + headlen * Math.cos(angle - Math.PI / 6),
+    //     yb + headlen * Math.sin(angle - Math.PI / 6)
+    //   );
+    //   ctx.lineTo(xb, yb);
+    //   ctx.lineTo(
+    //     xb + headlen * Math.cos(angle + Math.PI / 6),
+    //     yb + headlen * Math.sin(angle + Math.PI / 6)
+    //   );
+    // } else {
+    //   ctx.moveTo(
+    //     xa - headlen * Math.cos(angle - Math.PI / 6),
+    //     ya - headlen * Math.sin(angle - Math.PI / 6)
+    //   );
+    //   ctx.lineTo(xa, ya);
+    //   ctx.lineTo(
+    //     xa - headlen * Math.cos(angle + Math.PI / 6),
+    //     ya - headlen * Math.sin(angle + Math.PI / 6)
+    //   );
+    // }
+    // // console.log(_color.current, { idx });
+    // ctx.lineCap = "round";
+    // //arrow ends
+    // ctx.font = "22px monospace";
+    // // console.log(_color.current[idx]);
+    // ctx.strokeStyle = _color.current[idx];
+    // ctx.fillStyle = _color.current[idx];
+    // ctx.fillText("A", xa, ya - 20);
+    // ctx.fillText("B", xb, yb + 20);
+    // // ctx.stroke();
+
+    // ctx.stroke();
+  };
+
   const addPoint = (event) => {
     const rect = canvasRef.current.getBoundingClientRect();
     const x = event.clientX - rect.left;
@@ -310,6 +439,7 @@ export default function Canvas3() {
                       </>
                     )}
                   </Show>
+                  {/* loi's */}
                   {console.log(annotation.loi)}
                   <Show if={() => annotation.loi.length > 0}>
                     {() =>
@@ -328,21 +458,32 @@ export default function Canvas3() {
                           );
                         } else {
                           //render arrow
+                          // Calculate midpoint for text positioning
+                          const midX = (loiItem.start.x + loiItem.end.x) / 2;
+                          const midY = (loiItem.start.y + loiItem.end.y) / 2;
+
+                          let arrow = drawArrow(loiItem);
                           return (
                             <>
-                              <line
-                                x1={loiItem.start.x}
-                                y1={loiItem.start.y}
-                                x2={loiItem.end.x}
-                                y2={loiItem.end.y}
-                                stroke={
-                                  selectedAnnotationIndex.get() ===
-                                  annotationIndex
-                                    ? "green"
-                                    : "blue"
-                                }
-                                strokeWidth={2}
-                              />
+                              {/* <text
+                                x={xa}
+                                y={ya - 20}
+                                // textAnchor="middle"
+                                fontSize="20"
+                              >
+                                A
+                              </text>
+
+                              <text
+                                x={xb}
+                                y={yb + 30}
+                                // textAnchor="middle"
+                                fontSize="20"
+                              >
+                                B
+                              </text> */}
+
+                              {arrow}
                             </>
                           );
                         }
